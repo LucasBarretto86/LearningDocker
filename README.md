@@ -4,11 +4,15 @@
   - [What is docker?](#what-is-docker)
   - [Get started](#get-started)
   - [Images and Containers](#images-and-containers)
+  - [Images](#images)
+  - [Pulling images](#pulling-images)
+    - [Listing pulled images](#listing-pulled-images)
+    - [Removing pulled images](#removing-pulled-images)
+    - [Running pulled images](#running-pulled-images)
+    - [Listing running containers](#listing-running-containers)
+    - [Stop docker container](#stop-docker-container)
   - [Creating Docker images](#creating-docker-images)
-    - [Parent image](#parent-image)
-      - [Pulling parent image](#pulling-parent-image)
-      - [Listing pulled images](#listing-pulled-images)
-      - [Removing pulled images](#removing-pulled-images)
+    - [Dockerfile](#dockerfile)
 
 ## What is docker?
 
@@ -40,6 +44,18 @@ sudo apt-get update
 ```sh
 sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 ```
+
+**Granting docker privileges for an user:**
+
+To grant privileges and be able to run `docker` instead of `sudo docker`
+
+```sh
+sudo usermod -aG docker %USER%
+```
+
+> replace `%USER%` for your user
+
+Then logout and login again
 
 **Testing installation:**
 
@@ -83,19 +99,11 @@ On Docker images are the blueprints to create containers, which means that image
 
 Containers are the pre-configured isolated environment created by Docker using an image
 
-## Creating Docker images
+## Images
 
-Images are create by layers each layer will be responsible to define the structure that our container will have
+The first use an image will be downloading it from [Docker hub](https://hub.docker.com/) in our example we will be looking for the official `node` parent image
 
-The first layer of a image is called `parent image`, it will include the OS and some other runtime environment configuration
-
-The other additional layers will be used add the source code, add dependencies and etc, but for now lets look further to the `parent image`
-
-### Parent image
-
-The first step to setup a parent image will be downloading it from [Docker hub](https://hub.docker.com/) in our example we will be looking for the official `node` parent image
-
-On the Docker Hun we search for `node`
+On the Docker Hub we search for `node`
 
 ![Docker hub search](src/images/docker-hub-search.png)
 
@@ -111,7 +119,9 @@ But this the basic command, this will install the latest image version, if you w
 
 But for now let's install the latest version
 
-#### Pulling parent image
+## Pulling images
+
+To download an image we need to run de pull command
 
 ```sh
 sudo docker pull node
@@ -135,7 +145,7 @@ Status: Downloaded newer image for node:latest
 docker.io/library/node:latest
 ```
 
-#### Listing pulled images
+### Listing pulled images
 
 To list the images pulled run:
 
@@ -168,7 +178,7 @@ node:latest
 hello-world:latest
 ```
 
-#### Removing pulled images
+### Removing pulled images
 
 To remove a image that is no longer used we use the following syntax: `sudo  docker rmi [OPTIONS] IMAGE[:TAG|@DIGEST]`
 
@@ -210,3 +220,303 @@ sudo docker images
 REPOSITORY   TAG       IMAGE ID       CREATED       SIZE
 node         latest    b866e35a0dc4   12 days ago   1.1GB
 ```
+
+### Running pulled images
+
+To run a image we use the command
+
+```sh
+docker run node:latest 
+```
+
+You will notice that nothing will happen in some cases, but keep in mind that this is okay, alternatively you can use the option `-it` to run the container in interactive mode and get a shell prompt within the container
+
+```sh
+docker run -it node:latest
+```
+
+**Output:**
+
+```mono
+Welcome to Node.js v21.4.0.
+Type ".help" for more information.
+> 
+```
+
+### Listing running containers
+
+To check the list of running Docker containers, you can use the docker ps command. By default, this command shows you the currently running containers along with some basic information such as the container ID, names, ports, and status.
+
+```sh
+sudo docker ps
+```
+
+**Output:**
+
+```mono
+CONTAINER ID   IMAGE         COMMAND                  CREATED              STATUS              PORTS     NAMES
+1e01607fe8fb   node:latest   "docker-entrypoint.s…"   About a minute ago   Up About a minute             great_mccarthy
+```
+
+If you want to check all containers including those which are stopped you ca add the option `-a`
+
+```sh
+sudo docker ps -a
+```
+
+**Output:**
+
+```mono
+CONTAINER ID   IMAGE          COMMAND                  CREATED          STATUS                      PORTS     NAMES
+1e01607fe8fb   node:latest    "docker-entrypoint.s…"   3 minutes ago    Up 3 minutes                          great_mccarthy
+0508d9e6575d   node:latest    "docker-entrypoint.s…"   4 minutes ago    Exited (0) 4 minutes ago              brave_wiles
+cf851a3911a3   node:latest    "docker-entrypoint.s…"   9 minutes ago    Exited (0) 9 minutes ago              jolly_chebyshev
+fb8990de47ae   node:latest    "docker-entrypoint.s…"   40 minutes ago   Exited (0) 38 minutes ago             cool_goodall
+40e4b4aede28   node:latest    "docker-entrypoint.s…"   41 minutes ago   Exited (0) 41 minutes ago             fervent_wing
+6d010bf3d669   9c7a54a9a43c   "/hello"                 3 hours ago      Exited (0) 3 hours ago                zealous_einstein
+daef4bf20a61   9c7a54a9a43c   "/hello"                 10 days ago      Exited (0) 10 days ago                nice_herschel
+```
+
+> to show only the container id you can use `-q`
+
+You can also inspect a container
+
+```sh
+sudo docker inspect 1e01607fe8fb
+
+# OR
+
+sudo docker inspect great_mccarthy
+```
+
+**Output:**
+
+```mono
+[
+    {
+        "Id": "1e01607fe8fb55ddf743ca5a9963b3b1a55f6944d3812f8a860f979cf373e324",
+        "Created": "2023-12-18T21:11:15.465482575Z",
+        "Path": "docker-entrypoint.sh",
+        "Args": [
+            "node"
+        ],
+        "State": {
+            "Status": "running",
+            "Running": true,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 34641,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2023-12-18T21:11:16.460797208Z",
+            "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "Image": "sha256:b866e35a0dc4df85e168524b368567023eb22b06fe16f2237094e937fcd24d96",
+        "ResolvConfPath": "/var/lib/docker/containers/1e01607fe8fb55ddf743ca5a9963b3b1a55f6944d3812f8a860f979cf373e324/resolv.conf",
+        "HostnamePath": "/var/lib/docker/containers/1e01607fe8fb55ddf743ca5a9963b3b1a55f6944d3812f8a860f979cf373e324/hostname",
+        "HostsPath": "/var/lib/docker/containers/1e01607fe8fb55ddf743ca5a9963b3b1a55f6944d3812f8a860f979cf373e324/hosts",
+        "LogPath": "/var/lib/docker/containers/1e01607fe8fb55ddf743ca5a9963b3b1a55f6944d3812f8a860f979cf373e324/1e01607fe8fb55ddf743ca5a9963b3b1a55f6944d3812f8a860f979cf373e324-json.log",
+        "Name": "/great_mccarthy",
+        "RestartCount": 0,
+        "Driver": "overlay2",
+        "Platform": "linux",
+        "MountLabel": "",
+        "ProcessLabel": "",
+        "AppArmorProfile": "docker-default",
+        "ExecIDs": null,
+        "HostConfig": {
+            "Binds": null,
+            "ContainerIDFile": "",
+            "LogConfig": {
+                "Type": "json-file",
+                "Config": {}
+            },
+            "NetworkMode": "default",
+            "PortBindings": {},
+            "RestartPolicy": {
+                "Name": "no",
+                "MaximumRetryCount": 0
+            },
+            "AutoRemove": false,
+            "VolumeDriver": "",
+            "VolumesFrom": null,
+            "ConsoleSize": [
+                52,
+                205
+            ],
+            "CapAdd": null,
+            "CapDrop": null,
+            "CgroupnsMode": "private",
+            "Dns": [],
+            "DnsOptions": [],
+            "DnsSearch": [],
+            "ExtraHosts": null,
+            "GroupAdd": null,
+            "IpcMode": "private",
+            "Cgroup": "",
+            "Links": null,
+            "OomScoreAdj": 0,
+            "PidMode": "",
+            "Privileged": false,
+            "PublishAllPorts": false,
+            "ReadonlyRootfs": false,
+            "SecurityOpt": null,
+            "UTSMode": "",
+            "UsernsMode": "",
+            "ShmSize": 67108864,
+            "Runtime": "runc",
+            "Isolation": "",
+            "CpuShares": 0,
+            "Memory": 0,
+            "NanoCpus": 0,
+            "CgroupParent": "",
+            "BlkioWeight": 0,
+            "BlkioWeightDevice": [],
+            "BlkioDeviceReadBps": [],
+            "BlkioDeviceWriteBps": [],
+            "BlkioDeviceReadIOps": [],
+            "BlkioDeviceWriteIOps": [],
+            "CpuPeriod": 0,
+            "CpuQuota": 0,
+            "CpuRealtimePeriod": 0,
+            "CpuRealtimeRuntime": 0,
+            "CpusetCpus": "",
+            "CpusetMems": "",
+            "Devices": [],
+            "DeviceCgroupRules": null,
+            "DeviceRequests": null,
+            "MemoryReservation": 0,
+            "MemorySwap": 0,
+            "MemorySwappiness": null,
+            "OomKillDisable": null,
+            "PidsLimit": null,
+            "Ulimits": null,
+            "CpuCount": 0,
+            "CpuPercent": 0,
+            "IOMaximumIOps": 0,
+            "IOMaximumBandwidth": 0,
+            "MaskedPaths": [
+                "/proc/asound",
+                "/proc/acpi",
+                "/proc/kcore",
+                "/proc/keys",
+                "/proc/latency_stats",
+                "/proc/timer_list",
+                "/proc/timer_stats",
+                "/proc/sched_debug",
+                "/proc/scsi",
+                "/sys/firmware",
+                "/sys/devices/virtual/powercap"
+            ],
+            "ReadonlyPaths": [
+                "/proc/bus",
+                "/proc/fs",
+                "/proc/irq",
+                "/proc/sys",
+                "/proc/sysrq-trigger"
+            ]
+        },
+        "GraphDriver": {
+            "Data": {
+                "LowerDir": "/var/lib/docker/overlay2/3c5fea15736bc2e997488e2fa00464579f8be14c937db169e9d5c5b148cb91d6-init/diff:/var/lib/docker/overlay2/86cbd5491742bc67838f5b368433803621806a437302e31687c5acc8d38a1fd8/diff:/var/lib/docker/overlay2/a67b4b36d1d3570cd98117019a270bf1f323b2fc26e41bf1dd63e6a3856552f3/diff:/var/lib/docker/overlay2/91ffcd243591df5f0f930e191035ffb917502a6ba2457bf907d5d52f6619c43a/diff:/var/lib/docker/overlay2/5505d50b68159923351dce084cb9b1382903a15a2d095afe131b87f4a1fbbe3f/diff:/var/lib/docker/overlay2/0aa7ac21f3ce381f927f953a30f60b698ecc344061400e39f35cdf3ac6ebde07/diff:/var/lib/docker/overlay2/6ef5d962cb6fa176bfc3e95dd6c0ff632282f2ce88c57c1aafcc20f4a88665d0/diff:/var/lib/docker/overlay2/76e711ba5fa06de20314d995f5393b69d0a956f2710f87623b9256d4d241109f/diff:/var/lib/docker/overlay2/659a0ae5bdd02fdabe36e6fa7123e616b35690af56a5f3b2b081aebf4ac518c5/diff",
+                "MergedDir": "/var/lib/docker/overlay2/3c5fea15736bc2e997488e2fa00464579f8be14c937db169e9d5c5b148cb91d6/merged",
+                "UpperDir": "/var/lib/docker/overlay2/3c5fea15736bc2e997488e2fa00464579f8be14c937db169e9d5c5b148cb91d6/diff",
+                "WorkDir": "/var/lib/docker/overlay2/3c5fea15736bc2e997488e2fa00464579f8be14c937db169e9d5c5b148cb91d6/work"
+            },
+            "Name": "overlay2"
+        },
+        "Mounts": [],
+        "Config": {
+            "Hostname": "1e01607fe8fb",
+            "Domainname": "",
+            "User": "",
+            "AttachStdin": true,
+            "AttachStdout": true,
+            "AttachStderr": true,
+            "Tty": true,
+            "OpenStdin": true,
+            "StdinOnce": true,
+            "Env": [
+                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                "NODE_VERSION=21.4.0",
+                "YARN_VERSION=1.22.19"
+            ],
+            "Cmd": [
+                "node"
+            ],
+            "Image": "node:latest",
+            "Volumes": null,
+            "WorkingDir": "",
+            "Entrypoint": [
+                "docker-entrypoint.sh"
+            ],
+            "OnBuild": null,
+            "Labels": {}
+        },
+        "NetworkSettings": {
+            "Bridge": "",
+            "SandboxID": "a1acf55e021493149ee9705f5a384ef9460f07a8df6dcac7bb9952c2d02d434a",
+            "HairpinMode": false,
+            "LinkLocalIPv6Address": "",
+            "LinkLocalIPv6PrefixLen": 0,
+            "Ports": {},
+            "SandboxKey": "/var/run/docker/netns/a1acf55e0214",
+            "SecondaryIPAddresses": null,
+            "SecondaryIPv6Addresses": null,
+            "EndpointID": "046ed095ab8eaf716698594286f39dbf1ad6d15b8e25ec4f13cd28ccced519d6",
+            "Gateway": "172.17.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "IPAddress": "172.17.0.2",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "MacAddress": "02:42:ac:11:00:02",
+            "Networks": {
+                "bridge": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": null,
+                    "NetworkID": "1f10cd67380ce84b4997df42ad59001d0baafb163e7605ed7e44db717085f4d1",
+                    "EndpointID": "046ed095ab8eaf716698594286f39dbf1ad6d15b8e25ec4f13cd28ccced519d6",
+                    "Gateway": "172.17.0.1",
+                    "IPAddress": "172.17.0.2",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "MacAddress": "02:42:ac:11:00:02",
+                    "DriverOpts": null
+                }
+            }
+        }
+    }
+]
+```
+
+### Stop docker container
+
+To stop a docker container you can use the syntax `docker stop [OPTIONS] CONTAINER [CONTAINER...]` in our example it would be like this:
+
+```sh
+sudo docker inspect 1e01607fe8fb
+
+# OR
+
+sudo docker stop great_mccarthy
+```
+
+## Creating Docker images
+
+Images are create by layers, they are responsible to define each part of the structure that our container will have
+
+The initial layer of a image is called `parent image`, it will include the OS and some other runtime environment configuration
+
+The following layers are used to download the source code and its dependencies
+
+And the last layer is the layer where we will run commands to make our container ready for usage
+
+To be able to create a docker image and specify each layer behavior we will need to create a `Dockerfile`
+
+### Dockerfile
