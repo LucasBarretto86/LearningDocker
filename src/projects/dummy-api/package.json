@@ -3,9 +3,6 @@
   "version": "1.0.0",
   "description": "Used to learn docker",
   "main": "app.js",
-  "scripts": {
-    "start": "node app.js --port 5500 && google-chorme http://localhost:5500"
-  },
   "author": "Lucas Barretto",
   "license": "MIT",
   "private": true,

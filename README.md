@@ -1,26 +1,41 @@
 # Learning Docker
 
+**GPT: What is Docker?**
+
+> Docker allows you to package an application and its dependencies into a container, which is a lightweight, standalone, and executable software package. These containers run on a shared operating system kernel, but they are isolated from each other. Unlike virtual machines (VMs), which emulate an entire operating system and run on a hypervisor, containers share the host OS kernel and use resources more efficiently. Docker containers provide a consistent and reproducible environment, making it easier to develop, deploy, and scale applications across different environments.
+
+**GPT: What is Docker images and containers?**
+
+> **Docker Images:** It's a bundle that packs up all the necessary stuff your software needs to run, like code and tools. Think of it as a snapshot of a complete environment.
+>
+> **Docker Containers:** Now take that bundle, unpack it, and run it. A container is like a live, isolated version of your software, doing its job without messing with anything else on your system.
+
+---
+
+**Table of Contents:**
+
 - [Learning Docker](#learning-docker)
-  - [What is docker?](#what-is-docker)
   - [Get started](#get-started)
-  - [Images and Containers](#images-and-containers)
   - [Images](#images)
-  - [Pulling images](#pulling-images)
+    - [Pulling images](#pulling-images)
     - [Listing pulled images](#listing-pulled-images)
     - [Removing pulled images](#removing-pulled-images)
-    - [Running pulled images](#running-pulled-images)
-    - [Listing running containers](#listing-running-containers)
-    - [Stop docker container](#stop-docker-container)
-  - [Creating Docker images](#creating-docker-images)
-    - [Dockerfile](#dockerfile)
+  - [Containers](#containers)
+    - [Starting containers](#starting-containers)
+    - [Listing containers](#listing-containers)
+    - [Stopping containers](#stopping-containers)
+  - [Dockerfile](#dockerfile)
+    - [Parent Image (a.k.a base image)](#parent-image-aka-base-image)
+    - [Copy source code](#copy-source-code)
+    - [Installing dependencies](#installing-dependencies)
+    - [Exposing container port](#exposing-container-port)
+    - [Running commands](#running-commands)
+  - [Building image](#building-image)
+  - [References](#references)
 
-## What is docker?
-
-Docker allows you to package an application and its dependencies into a container, which is a lightweight, standalone, and executable software package. These containers run on a shared operating system kernel, but they are isolated from each other. Unlike virtual machines (VMs), which emulate an entire operating system and run on a hypervisor, containers share the host OS kernel and use resources more efficiently. Docker containers provide a consistent and reproducible environment, making it easier to develop, deploy, and scale applications across different environments.
+---
 
 ## Get started
-
-[Installing Docker](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository)
 
 **Adding official repository:**
 
@@ -89,25 +104,15 @@ For more examples and ideas, visit:
 
 ```
 
-## Images and Containers
-
-**Images:**
-
-On Docker images are the blueprints to create containers, which means that images has all the required configuration and dependencies for a container, as soon as you request Docker to run a image Docker will create a container following this blueprint.
-
-**Containers:**
-
-Containers are the pre-configured isolated environment created by Docker using an image
-
 ## Images
 
-The first use an image will be downloading it from [Docker hub](https://hub.docker.com/) in our example we will be looking for the official `node` parent image
+The first use an image will be downloading it from [Docker hub](https://hub.docker.com/) in our example we will be looking for the official `node` parent image (a.k.a base image)
 
 On the Docker Hub we search for `node`
 
 ![Docker hub search](src/images/docker-hub-search.png)
 
-To download the official image that will be our parent image, you will notice a field with the respective command do download it:
+To download the official image that will be our parent image (a.k.a base image), you will notice a field with the respective command do download it:
 
 ![Download command](src/images/docker-hub-command.png)
 
@@ -119,7 +124,7 @@ But this the basic command, this will install the latest image version, if you w
 
 But for now let's install the latest version
 
-## Pulling images
+### Pulling images
 
 To download an image we need to run de pull command
 
@@ -221,9 +226,13 @@ REPOSITORY   TAG       IMAGE ID       CREATED       SIZE
 node         latest    b866e35a0dc4   12 days ago   1.1GB
 ```
 
-### Running pulled images
+## Containers
 
-To run a image we use the command
+Containers are running instances of images, since images are the blueprint of a container a running image produces a container
+
+### Starting containers
+
+To start a containers we need to run the image we pulled from the Docker Hub
 
 ```sh
 docker run node:latest 
@@ -243,7 +252,7 @@ Type ".help" for more information.
 > 
 ```
 
-### Listing running containers
+### Listing containers
 
 To check the list of running Docker containers, you can use the docker ps command. By default, this command shows you the currently running containers along with some basic information such as the container ID, names, ports, and status.
 
@@ -495,7 +504,7 @@ sudo docker inspect great_mccarthy
 ]
 ```
 
-### Stop docker container
+### Stopping containers
 
 To stop a docker container you can use the syntax `docker stop [OPTIONS] CONTAINER [CONTAINER...]` in our example it would be like this:
 
@@ -507,16 +516,179 @@ sudo docker inspect 1e01607fe8fb
 sudo docker stop great_mccarthy
 ```
 
-## Creating Docker images
+## Dockerfile
 
-Images are create by layers, they are responsible to define each part of the structure that our container will have
+Images are constituted by layers, these layers are responsible to define each part of the structure that our container will have
 
-The initial layer of a image is called `parent image`, it will include the OS and some other runtime environment configuration
+The initial layer of a image is called `parent image (a.k.a base image)`, it will include the OS and some other runtime environment configuration
 
-The following layers are used to download the source code and its dependencies
-
-And the last layer is the layer where we will run commands to make our container ready for usage
+The following layers are used to download the source code and its dependencies, and the last layer is the layer where we will run the necessary commands to make our container ready use
 
 To be able to create a docker image and specify each layer behavior we will need to create a `Dockerfile`
 
-### Dockerfile
+**GPT: What is a Dockerfile?**
+
+> A Dockerfile is a text file that contains instructions for building a Docker image. It serves as a blueprint for creating a lightweight, portable, and self-sufficient containerized application. The Dockerfile includes commands to specify the parent image (a.k.a base image), set up the environment, copy files, install dependencies, and configure the application. When the Dockerfile is used with the docker build command, it produces a Docker image that encapsulates the application and its dependencies, allowing for consistent deployment across different environments.
+
+In order to learn hands-on I created a dummy project that will be used on the following topics
+
+[Example: Project: dummy-api](/src/projects/dummy-api/app.js)
+
+```tree
+.
+├── app.js
+└── package.json
+```
+
+So to be able to run our dummy project within a container we gonna have to create an image that will be contain all the necessary configurations to run our application that's when dockerfile comes in.
+
+So within our dummy project we are going to create a file called `Dockerfile` without any extension
+
+```tree
+.
+├── app.js
+├── Dockerfile
+└── package.json
+```
+
+### Parent Image (a.k.a base image)
+
+On or Dockerfile each instruction is a layer the first instruction will be reference to our parent image (a.k.a base image)
+
+```Dockerfile
+# ./Dockerfile
+
+FROM node:18-alpine
+```
+
+> Notice that it doesn't need to be necessarily the on we pulled locally
+
+### Copy source code
+
+The second layer will be the copy of our source code, the syntax is `COPY %FROM% %TO%`, in our case `%FROM%` = `.` (current folder) `%TO%` = `dummy-api/`
+
+```Dockerfile
+# ./Dockerfile
+
+FROM node:18-alpine
+
+COPY . dummy-api/
+```
+
+### Installing dependencies
+
+First to guarantee that the commands we are going to run on the container will be ran on the exact root of our project we are going to add the instruction `ẀORKDIR` soon after the `FROM` instruction, by that we specify the root folder of our container.
+
+After that we will have to adjust the destination for our `COPY` instruction, since we are defining the `ẀORKDIR` we no longer need to specify the destination path as we copy because docker will already know where to put the project files.
+
+Soon as we set this up we are ready to set the `RUN` to install our dependencies
+
+```Dockerfile
+# ./Dockerfile
+
+FROM node:18-alpine
+
+WORKDIR dummy-api/
+
+COPY . .
+
+RUN yarn install
+```
+
+### Exposing container port
+
+To be specify tje port our containerized environment will be listening the application on the during runtime we need use the `EXPOSE` instruction, it's optional but it can be helpful.
+
+```Dockerfile
+# ./Dockerfile
+
+FROM node:18-alpine
+
+WORKDIR dummy-api/
+
+COPY . .
+
+RUN yarn install
+
+EXPOSE 5500
+```
+
+> Keep in mind that `EXPOSE` doesn't mean that the local machine will have direct communication with the container itself, for that we use other options as we run the the container image
+
+### Running commands
+
+After we added the basic instruction to create or container we need to provide the necessary commands that needs to be executed as the container gets running, for that we will use the instruction `CMD`,sending an Array of strings with instruction as parameter:
+
+```Dockerfile
+# ./Dockerfile
+
+FROM node:18-alpine
+
+WORKDIR dummy-api/
+
+COPY . .
+
+RUN yarn install
+
+EXPOSE 5500
+
+CMD ["node", "app.js", "--port 5500"]
+```
+
+> In our case we are just ask node to run our application
+
+## Building image
+
+After creating the Dockerfile the next step will be to produce a Docker image from it:
+
+```sh
+sudo docker build -t my-dummy-api .
+```
+
+> The option `-t` allow us to give a tag name for our image and the `.` means where the Dockerfile is relatively to where the build command is called
+
+**Output:**
+
+```mono
+[+] Building 16.2s (9/9) FINISHED                                                                                                                                            docker:default
+ => [internal] load .dockerignore                                                                                                                                                      0.0s
+ => => transferring context: 2B                                                                                                                                                        0.0s
+ => [internal] load build definition from Dockerfile                                                                                                                                   0.0s
+ => => transferring dockerfile: 104B                                                                                                                                                   0.0s
+ => [internal] load metadata for docker.io/library/node:18-alpine                                                                                                                      2.5s
+ => [1/4] FROM docker.io/library/node:18-alpine@sha256:b1a0356f7d6b86c958a06949d3db3f7fb27f95f627aa6157cb98bc65c801efa2                                                                9.1s
+ => => resolve docker.io/library/node:18-alpine@sha256:b1a0356f7d6b86c958a06949d3db3f7fb27f95f627aa6157cb98bc65c801efa2                                                                0.0s
+ => => sha256:0f158788f409a5decd9495205daf4aa17df26d8219d6dc12acab5949342866fe 40.24MB / 40.24MB                                                                                       1.5s
+ => => sha256:f028dff98271801e449c3ebac94a319851128c0ec687e13e00a68b2d98ec4700 2.34MB / 2.34MB                                                                                         0.8s
+ => => sha256:b1a0356f7d6b86c958a06949d3db3f7fb27f95f627aa6157cb98bc65c801efa2 1.43kB / 1.43kB                                                                                         0.0s
+ => => sha256:8842b060b01af71c082cee310b428a2d825e940d9fd9e450e05d726aea66a480 1.16kB / 1.16kB                                                                                         0.0s
+ => => sha256:f3776b60850deec9eb1da7746fa20b3f000bf153408dc896d6606704c83f948d 7.14kB / 7.14kB                                                                                         0.0s
+ => => sha256:661ff4d9561e3fd050929ee5097067c34bafc523ee60f5294a37fd08056a73ca 3.41MB / 3.41MB                                                                                         1.1s
+ => => sha256:18f25c33705ddc3351cc4893fdc0a38405bdd0741643798918fa2b0146fd5a9d 451B / 451B                                                                                             1.0s
+ => => extracting sha256:661ff4d9561e3fd050929ee5097067c34bafc523ee60f5294a37fd08056a73ca                                                                                              0.5s
+ => => extracting sha256:0f158788f409a5decd9495205daf4aa17df26d8219d6dc12acab5949342866fe                                                                                              6.5s
+ => => extracting sha256:f028dff98271801e449c3ebac94a319851128c0ec687e13e00a68b2d98ec4700                                                                                              0.3s
+ => => extracting sha256:18f25c33705ddc3351cc4893fdc0a38405bdd0741643798918fa2b0146fd5a9d                                                                                              0.0s
+ => [internal] load build context                                                                                                                                                      0.6s
+ => => transferring context: 2.16MB                                                                                                                                                    0.6s
+ => [2/4] WORKDIR dummy-api/                                                                                                                                                           0.3s
+ => [3/4] COPY . .                                                                                                                                                                     0.5s
+ => [4/4] RUN yarn install                                                                                                                                                             3.2s
+ => exporting to image                                                                                                                                                                 0.4s 
+ => => exporting layers                                                                                                                                                                0.4s 
+ => => writing image sha256:1f33c17521fc7195b7b4134a4063ced4d9ff064c49005651346db14b9a7a86da                                                                                           0.0s 
+ => => naming to docker.io/library/my-dummy-api      
+```
+
+Now if we run the `Docker images` command:
+
+```mono
+REPOSITORY     TAG       IMAGE ID       CREATED         SIZE
+my-dummy-api   latest    1f33c17521fc   4 minutes ago   136MB
+node           latest    b866e35a0dc4   13 days ago     1.1GB
+```
+
+## References
+
+[Installing Docker](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository)
+[Net Ninjas - Docker Crash Course](https://www.youtube.com/playlist?list=PL4cUxeGkcC9hxjeEtdHFNYMtCpjNBm3h7)
