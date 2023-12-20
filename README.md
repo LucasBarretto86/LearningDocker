@@ -24,13 +24,15 @@
     - [Starting containers](#starting-containers)
     - [Listing containers](#listing-containers)
     - [Stopping containers](#stopping-containers)
-  - [Dockerfile](#dockerfile)
+  - [Dockerfile - Creating and running your own Images](#dockerfile---creating-and-running-your-own-images)
     - [Parent Image (a.k.a base image)](#parent-image-aka-base-image)
     - [Copy source code](#copy-source-code)
     - [Installing dependencies](#installing-dependencies)
     - [Exposing container port](#exposing-container-port)
     - [Running commands](#running-commands)
-  - [Building image](#building-image)
+    - [Building image](#building-image)
+    - [Running image](#running-image)
+    - [`.dockerignore`](#dockerignore)
   - [References](#references)
 
 ---
@@ -204,6 +206,8 @@ Okay since the image is installed with docker we have to force it to be removed,
 ```sh
 sudo docker rmi hello-world:latest -f
 ```
+
+> Notice that the container also an be removed by it's ID, it would be something like that `sudo docker rmi 1f33c17521fc -f`
 
 **Output:**
 
@@ -516,7 +520,7 @@ sudo docker inspect 1e01607fe8fb
 sudo docker stop great_mccarthy
 ```
 
-## Dockerfile
+## Dockerfile - Creating and running your own Images
 
 Images are constituted by layers, these layers are responsible to define each part of the structure that our container will have
 
@@ -637,7 +641,7 @@ CMD ["node", "app.js", "--port 5500"]
 
 > In our case we are just ask node to run our application
 
-## Building image
+### Building image
 
 After creating the Dockerfile the next step will be to produce a Docker image from it:
 
@@ -650,42 +654,64 @@ sudo docker build -t my-dummy-api .
 **Output:**
 
 ```mono
-[+] Building 16.2s (9/9) FINISHED                                                                                                                                            docker:default
- => [internal] load .dockerignore                                                                                                                                                      0.0s
- => => transferring context: 2B                                                                                                                                                        0.0s
- => [internal] load build definition from Dockerfile                                                                                                                                   0.0s
- => => transferring dockerfile: 104B                                                                                                                                                   0.0s
- => [internal] load metadata for docker.io/library/node:18-alpine                                                                                                                      2.5s
- => [1/4] FROM docker.io/library/node:18-alpine@sha256:b1a0356f7d6b86c958a06949d3db3f7fb27f95f627aa6157cb98bc65c801efa2                                                                9.1s
- => => resolve docker.io/library/node:18-alpine@sha256:b1a0356f7d6b86c958a06949d3db3f7fb27f95f627aa6157cb98bc65c801efa2                                                                0.0s
- => => sha256:0f158788f409a5decd9495205daf4aa17df26d8219d6dc12acab5949342866fe 40.24MB / 40.24MB                                                                                       1.5s
- => => sha256:f028dff98271801e449c3ebac94a319851128c0ec687e13e00a68b2d98ec4700 2.34MB / 2.34MB                                                                                         0.8s
- => => sha256:b1a0356f7d6b86c958a06949d3db3f7fb27f95f627aa6157cb98bc65c801efa2 1.43kB / 1.43kB                                                                                         0.0s
- => => sha256:8842b060b01af71c082cee310b428a2d825e940d9fd9e450e05d726aea66a480 1.16kB / 1.16kB                                                                                         0.0s
- => => sha256:f3776b60850deec9eb1da7746fa20b3f000bf153408dc896d6606704c83f948d 7.14kB / 7.14kB                                                                                         0.0s
- => => sha256:661ff4d9561e3fd050929ee5097067c34bafc523ee60f5294a37fd08056a73ca 3.41MB / 3.41MB                                                                                         1.1s
- => => sha256:18f25c33705ddc3351cc4893fdc0a38405bdd0741643798918fa2b0146fd5a9d 451B / 451B                                                                                             1.0s
- => => extracting sha256:661ff4d9561e3fd050929ee5097067c34bafc523ee60f5294a37fd08056a73ca                                                                                              0.5s
- => => extracting sha256:0f158788f409a5decd9495205daf4aa17df26d8219d6dc12acab5949342866fe                                                                                              6.5s
- => => extracting sha256:f028dff98271801e449c3ebac94a319851128c0ec687e13e00a68b2d98ec4700                                                                                              0.3s
- => => extracting sha256:18f25c33705ddc3351cc4893fdc0a38405bdd0741643798918fa2b0146fd5a9d                                                                                              0.0s
- => [internal] load build context                                                                                                                                                      0.6s
- => => transferring context: 2.16MB                                                                                                                                                    0.6s
- => [2/4] WORKDIR dummy-api/                                                                                                                                                           0.3s
- => [3/4] COPY . .                                                                                                                                                                     0.5s
- => [4/4] RUN yarn install                                                                                                                                                             3.2s
- => exporting to image                                                                                                                                                                 0.4s 
- => => exporting layers                                                                                                                                                                0.4s 
- => => writing image sha256:1f33c17521fc7195b7b4134a4063ced4d9ff064c49005651346db14b9a7a86da                                                                                           0.0s 
- => => naming to docker.io/library/my-dummy-api      
+[+] Building 8.9s (9/9) FINISHED                                                                                                docker:default
+ => [internal] load build definition from Dockerfile                                                                                      0.0s
+ => => transferring dockerfile: 156B                                                                                                      0.0s
+ => [internal] load .dockerignore                                                                                                         0.0s
+ => => transferring context: 52B                                                                                                          0.0s
+ => [internal] load metadata for docker.io/library/node:18-alpine                                                                         1.6s
+ => [internal] load build context                                                                                                         0.0s
+ => => transferring context: 280B                                                                                                         0.0s
+ => [1/4] FROM docker.io/library/node:18-alpine@sha256:b1a0356f7d6b86c958a06949d3db3f7fb27f95f627aa6157cb98bc65c801efa2                   0.0s
+ => CACHED [2/4] WORKDIR dummy-api/                                                                                                       0.0s
+ => [3/4] COPY . .                                                                                                                        0.0s
+ => [4/4] RUN yarn install                                                                                                                6.3s
+ => exporting to image                                                                                                                    0.9s
+ => => exporting layers                                                                                                                   0.8s
+ => => writing image sha256:0cd86c0aae46b10d3fd1ef1e10213eb66b66751c6f23fe93cd89776aa4a3021b                                              0.0s 
+ => => naming to docker.io/library/my-dummy-api                                                                                           0.0s ```
 ```
 
-Now if we run the `Docker images` command:
+### Running image
+
+As we created our own image we manage to specify each port we want to `EXPOSE` as a way of communication between the container and its outer environment
+
+In our example we are using port 5500
+
+If we simply run our image without specify the port we exposed we won't able to access the application we are running within our container
+
+```sh
+sudo docker run my-dummy-api
+```
+
+**Output:**
 
 ```mono
-REPOSITORY     TAG       IMAGE ID       CREATED         SIZE
-my-dummy-api   latest    1f33c17521fc   4 minutes ago   136MB
-node           latest    b866e35a0dc4   13 days ago     1.1GB
+listening for requests on port 5500
+```
+
+If we try to access the localhost on the port `5500` without mentioning it on the run command, this what we get:
+
+![Localhost without forwarding port](/src/images/docker-port-not-exposed.png)
+
+When we use the command forwarding the port accordingly:
+
+```sh
+docker run -p 8080:5500 my-dummy-api
+```
+
+> Notice that I don't need necessary forward port `5500` to the same port on my external environment, we can forward for any port currently available
+
+![Localhost forwarding port](/src/images/docker-port-exposed.png)
+
+### `.dockerignore`
+
+Just as git, docker also have a way to ignore files that you don't want to add to your image, in our case we just are going to ignore `node_modules`, because since we are going to run our application from the container we don't need to add local dependencies and that might reduce the size of our image
+
+```sh
+# .dockerignore
+
+node_modules
 ```
 
 ## References
