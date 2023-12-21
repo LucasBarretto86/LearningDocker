@@ -20,10 +20,15 @@
     - [Pulling images](#pulling-images)
     - [Listing pulled images](#listing-pulled-images)
     - [Removing pulled images](#removing-pulled-images)
+    - [Image Commands](#image-commands)
   - [Containers](#containers)
+    - [Creating containers](#creating-containers)
     - [Starting containers](#starting-containers)
     - [Listing containers](#listing-containers)
     - [Stopping containers](#stopping-containers)
+      - [Stopping all at once](#stopping-all-at-once)
+    - [Pruning all containers](#pruning-all-containers)
+    - [Container commands](#container-commands)
   - [Dockerfile - Creating and running your own Images](#dockerfile---creating-and-running-your-own-images)
     - [Parent Image (a.k.a base image)](#parent-image-aka-base-image)
     - [Copy source code](#copy-source-code)
@@ -33,6 +38,8 @@
     - [Building image](#building-image)
     - [Running image](#running-image)
     - [`.dockerignore`](#dockerignore)
+    - [Layer Caching](#layer-caching)
+      - [Fixing dependencies cache issue](#fixing-dependencies-cache-issue)
   - [References](#references)
 
 ---
@@ -77,7 +84,7 @@ Then logout and login again
 **Testing installation:**
 
 ```sh
-sudo docker run hello-world
+docker run hello-world
 ```
 
 **Output:**
@@ -131,7 +138,7 @@ But for now let's install the latest version
 To download an image we need to run de pull command
 
 ```sh
-sudo docker pull node
+docker pull node
 ```
 
 **Output:**
@@ -157,11 +164,11 @@ docker.io/library/node:latest
 To list the images pulled run:
 
 ```sh
-sudo docker images
+docker images
 
 # OR
 
-sudo docker image ls
+docker image ls
 ```
 
 **Output:**
@@ -175,7 +182,7 @@ hello-world   latest    9c7a54a9a43c   7 months ago   13.3kB
 Alternatively you can list the version installed like this:
 
 ```sh
-sudo docker images --format "{{.Repository}}:{{.Tag}}"
+docker images --format "{{.Repository}}:{{.Tag}}"
 ```
 
 **Output:**
@@ -187,12 +194,12 @@ hello-world:latest
 
 ### Removing pulled images
 
-To remove a image that is no longer used we use the following syntax: `sudo  docker rmi [OPTIONS] IMAGE[:TAG|@DIGEST]`
+To remove a image that is no longer used we use the following syntax: `docker rmi [OPTIONS] IMAGE[:TAG|@DIGEST]`
 
 Let's remove the `hello-world` image used to test docker installation
 
 ```sh
-sudo docker rmi hello-world:latest
+docker rmi hello-world:latest
 ```
 
 **Output:**
@@ -204,10 +211,10 @@ Error response from daemon: conflict: unable to remove repository reference "hel
 Okay since the image is installed with docker we have to force it to be removed, for that we use the option `-f` just like we do with github
 
 ```sh
-sudo docker rmi hello-world:latest -f
+docker rmi hello-world:latest -f
 ```
 
-> Notice that the container also an be removed by it's ID, it would be something like that `sudo docker rmi 1f33c17521fc -f`
+> Notice that the container also an be removed by it's ID, it would be something like that `docker rmi 1f33c17521fc -f`
 
 **Output:**
 
@@ -220,7 +227,7 @@ Deleted: sha256:9c7a54a9a43cca047013b82af109fe963fde787f63f9e016fdc3384500c2823d
 Let's check if it worked:
 
 ```sh
-sudo docker images
+docker images
 ```
 
 **Output:**
@@ -230,13 +237,32 @@ REPOSITORY   TAG       IMAGE ID       CREATED       SIZE
 node         latest    b866e35a0dc4   12 days ago   1.1GB
 ```
 
+### Image Commands
+
+Use `docker image` to list all available images commands
+
+| Command    | Description                                                                      |
+| :--------- | :------------------------------------------------------------------------------- |
+| build      | Build an image from a Dockerfile                                                 |
+| history    | Show the history of an image                                                     |
+| import     | Import the contents from a tarball to create a filesystem image                  |
+| inspect    | Display detailed information on one or more images                               |
+| load       | Load an image from a tar archive or STDIN                                        |
+| ls         | List images                                                                      |
+| prune      | Remove unused images                                                             |
+| pull       | Download an image from a registry                                                |
+| push       | Upload an image to a registry                                                    |
+| rm         | Remove one or more images                                                        |
+| save       | Save one or more images to a tar archive (streamed to STDOUT by default)         |
+| tag        | Create a tag TARGET_IMAGE that refers to SOURCE_IMAGE                            |
+
 ## Containers
 
 Containers are running instances of images, since images are the blueprint of a container a running image produces a container
 
-### Starting containers
+### Creating containers
 
-To start a containers we need to run the image we pulled from the Docker Hub
+To create a containers we need to run the image we pulled from the Docker Hub
 
 ```sh
 docker run node:latest 
@@ -256,12 +282,41 @@ Type ".help" for more information.
 > 
 ```
 
+### Starting containers
+
+Well to start a existing container we use the `start` command
+
+First let's list the existing containers:
+
+```sh
+docker ps -a
+```
+
+**Output:**
+
+```mono
+CONTAINER ID   IMAGE          COMMAND                  CREATED              STATUS                       PORTS     NAMES
+58cdb651af75   my-dummy-api   "docker-entrypoint.s…"   About a minute ago   Exited (137) 8 seconds ago             amazing_carson
+```
+
+Noticed that the status column shows `Exited` which means this container is stopped
+
+So to start this existing container we need to run the `start` command giving it's name or Id as parameter
+
+```sh
+docker start amazing_carson
+
+OR 
+
+docker start 58cdb651af75
+```
+
 ### Listing containers
 
 To check the list of running Docker containers, you can use the docker ps command. By default, this command shows you the currently running containers along with some basic information such as the container ID, names, ports, and status.
 
 ```sh
-sudo docker ps
+docker ps
 ```
 
 **Output:**
@@ -274,7 +329,7 @@ CONTAINER ID   IMAGE         COMMAND                  CREATED              STATU
 If you want to check all containers including those which are stopped you ca add the option `-a`
 
 ```sh
-sudo docker ps -a
+docker ps -a
 ```
 
 **Output:**
@@ -290,16 +345,17 @@ fb8990de47ae   node:latest    "docker-entrypoint.s…"   40 minutes ago   Exited
 daef4bf20a61   9c7a54a9a43c   "/hello"                 10 days ago      Exited (0) 10 days ago                nice_herschel
 ```
 
-> to show only the container id you can use `-q`
+> To show only the container id you can use `-q`
+> To list all containers stopped or running use `-a`
 
 You can also inspect a container
 
 ```sh
-sudo docker inspect 1e01607fe8fb
+docker inspect 1e01607fe8fb
 
 # OR
 
-sudo docker inspect great_mccarthy
+docker inspect great_mccarthy
 ```
 
 **Output:**
@@ -513,12 +569,112 @@ sudo docker inspect great_mccarthy
 To stop a docker container you can use the syntax `docker stop [OPTIONS] CONTAINER [CONTAINER...]` in our example it would be like this:
 
 ```sh
-sudo docker inspect 1e01607fe8fb
+docker inspect 1e01607fe8fb
 
 # OR
 
-sudo docker stop great_mccarthy
+docker stop great_mccarthy
 ```
+
+#### Stopping all at once
+
+We could also stop various containers giving multiple ids or tags on a single command, but in cases you want stop all at once there's a small trick:
+
+```sh
+docker stop $(docker ps -q)
+```
+
+### Pruning all containers
+
+Just as git keeps various branches on disk, docker also keeps various containers on disk as you ran it, so to ensure that we have a clean slat to create and tag our containers we might want to remove all existing containers, for that we use the `prune` command
+
+First lets list our containers:
+
+```sh
+docker ps -a
+```
+
+> `-a` it's an option to list all containers running or not
+
+**Output:**
+
+```mono
+CONTAINER ID   IMAGE          COMMAND                  CREATED          STATUS                       PORTS     NAMES
+9a67dd3dce9d   my-dummy-api   "docker-entrypoint.s…"   6 minutes ago    Exited (137) 5 minutes ago             tender_ptolemy
+87567fa48eff   my-dummy-api   "docker-entrypoint.s…"   6 minutes ago    Exited (137) 5 minutes ago             intelligent_zhukovsky
+b10384c01f19   my-dummy-api   "docker-entrypoint.s…"   6 minutes ago    Exited (137) 5 minutes ago             determined_banach
+49a781044feb   my-dummy-api   "docker-entrypoint.s…"   6 minutes ago    Exited (137) 5 minutes ago             cranky_pare
+052a1c023c9b   my-dummy-api   "docker-entrypoint.s…"   6 minutes ago    Exited (137) 5 minutes ago             quirky_hertz
+925ff736c5ea   my-dummy-api   "docker-entrypoint.s…"   6 minutes ago    Exited (137) 5 minutes ago             vibrant_lalande
+680e8f7dcd72   my-dummy-api   "docker-entrypoint.s…"   6 minutes ago    Exited (137) 5 minutes ago             jovial_colden
+39ef2b65fd1b   my-dummy-api   "docker-entrypoint.s…"   6 minutes ago    Exited (137) 5 minutes ago             relaxed_margulis
+0598bae2708d   my-dummy-api   "docker-entrypoint.s…"   6 minutes ago    Exited (137) 5 minutes ago             awesome_dubinsky
+7b4d67a153ee   my-dummy-api   "docker-entrypoint.s…"   6 minutes ago    Exited (137) 5 minutes ago             optimistic_germain
+d34a540e9ab3   my-dummy-api   "docker-entrypoint.s…"   7 minutes ago    Created                                exciting_edison
+2b300630c2a7   my-dummy-api   "docker-entrypoint.s…"   7 minutes ago    Created                                optimistic_hugle
+5e818760d68b   my-dummy-api   "docker-entrypoint.s…"   12 minutes ago   Exited (137) 5 minutes ago             container-1
+```
+
+To remove a single container we use `rm` or `rmi`, but to remove it all from the disk we use:
+
+```sh
+docker container prune
+```
+
+**Output:**
+
+```mono
+WARNING! This will remove all stopped containers.
+Are you sure you want to continue? [y/N] y
+Deleted Containers:
+9a67dd3dce9dc93a1a05fef4562188bf12e10ac98c0421b6a12f01af1cc8373b
+87567fa48effb45adbea65f3db4f756e608377668700f1df09758cf85adee3fc
+b10384c01f19e65d804bb307a44c71a27e49b7b0bc0690537bb1c230589c09c1
+49a781044feb771582fa539c1276a612db831eb2a9a24052af60c3509f6e6b5b
+052a1c023c9bda61d18902d44611247381b733f0eb7705e3e420665d06a8644e
+925ff736c5eaa9ca922f38162b4a48715576daba3c78c3bf9729c6b97bed4067
+680e8f7dcd7211115ff5bd9d0ae573c5f00835485573baa07f8126712ddbd657
+39ef2b65fd1bf4f0f28fbb4c105b947f525c61ad70d6e38cac21a8342415ec23
+0598bae2708d0ad40083523aaa1d38739bf88fd36f02668f9252d448d1ef8306
+7b4d67a153ee958c06895a409e090d6330a8db98fabfec4177de5cc99dbe772e
+d34a540e9ab3a581ed8389bb5322a0a5aadb3ae0a6f498381e55a15046eb29d4
+2b300630c2a7bb536ec9bd67778bf8ce377ce885ca0548b9cfb12c616850f478
+5e818760d68b0fc9f6529fdd411c48c3fad07f3074e80cea8f1696325bcefdd2
+```
+
+> Notice that before proceed ir will ask if you are sure about the removal, to move along and remove it all you must prompt `y`
+
+### Container commands
+
+Use `docker container` to check all the available commands for containers
+
+| Command    | Description                                                                      |
+| :--------- | :------------------------------------------------------------------------------- |
+| attach     | Attach local standard input, output, and error streams to a running container    |
+| commit     | Create a new image from a container's changes                                    |
+| cp         | Copy files/folders between a container and the local filesystem                  |
+| create     | Create a new container                                                           |
+| diff       | Inspect changes to files or directories on a container's filesystem              |
+| exec       | Execute a command in a running container                                         |
+| export     | Export a container's filesystem as a tar archive                                 |
+| inspect    | Display detailed information on one or more containers                           |
+| kill       | Kill one or more running containers                                              |
+| logs       | Fetch the logs of a container                                                    |
+| ls         | List containers                                                                  |
+| pause      | Pause all processes within one or more containers                                |
+| port       | List port mappings or a specific mapping for the container                       |
+| prune      | Remove all stopped containers                                                    |
+| rename     | Rename a container                                                               |
+| restart    | Restart one or more containers                                                   |
+| rm         | Remove one or more containers                                                    |
+| run        | Create and run a new container from an image                                     |
+| start      | Start one or more stopped containers                                             |
+| stats      | Display a live stream of container(s) resource usage statistics                  |
+| stop       | Stop one or more running containers                                              |
+| top        | Display the running processes of a container                                     |
+| unpause    | Unpause all processes within one or more containers                              |
+| update     | Update configuration of one or more containers                                   |
+| wait       | Block until one or more containers stop, then print their exit codes             |
 
 ## Dockerfile - Creating and running your own Images
 
@@ -646,7 +802,7 @@ CMD ["node", "app.js", "--port 5500"]
 After creating the Dockerfile the next step will be to produce a Docker image from it:
 
 ```sh
-sudo docker build -t my-dummy-api .
+docker build -t my-dummy-api .
 ```
 
 > The option `-t` allow us to give a tag name for our image and the `.` means where the Dockerfile is relatively to where the build command is called
@@ -681,7 +837,7 @@ In our example we are using port 5500
 If we simply run our image without specify the port we exposed we won't able to access the application we are running within our container
 
 ```sh
-sudo docker run my-dummy-api
+docker run my-dummy-api
 ```
 
 **Output:**
@@ -704,6 +860,23 @@ docker run -p 8080:5500 my-dummy-api
 
 ![Localhost forwarding port](/src/images/docker-port-exposed.png)
 
+Another useful option to the run command is the `--name` option, which allow you to defined custom naming for your container
+
+Let's also add the option `-d` to start or container but without blocking the terminal
+
+```sh
+docker run --name=container-1 -d -p 8080:5500 my-dummy-api
+```
+
+So now since our terminal isn't blocked let's run the `docker ps`
+
+```mono
+CONTAINER ID   IMAGE          COMMAND                  CREATED         STATUS         PORTS                                       NAMES
+5e818760d68b   my-dummy-api   "docker-entrypoint.s…"   8 seconds ago   Up 6 seconds   0.0.0.0:8080->5500/tcp, :::8080->5500/tcp   container-1
+```
+
+> Keep in mind that the `run` command is used to create a container, which means that if you already have used it once and just want to start the existing container use the `start` command giving the container tag as parameter so it will keep all the definitions used to create the container like name, port and etc..
+
 ### `.dockerignore`
 
 Just as git, docker also have a way to ignore files that you don't want to add to your image, in our case we just are going to ignore `node_modules`, because since we are going to run our application from the container we don't need to add local dependencies and that might reduce the size of our image
@@ -712,6 +885,125 @@ Just as git, docker also have a way to ignore files that you don't want to add t
 # .dockerignore
 
 node_modules
+```
+
+### Layer Caching
+
+When we look at our `Dockerfile` every instruction that we added is defined an image layer, by default, while building an image, docker will check for each layer if there's any existing cache, if doesn't then it will operate the instruction to build the layer, if it does then it will use the cached layer and skip to the next instruction. So, if we try to build a new image based on our unchanged source code and `Dockerfile`:
+
+```sh
+docker build -t myapp-1 .
+```
+
+You will notice that most of the layers will be build using cache:
+
+```mono
+[+] Building 0.6s (9/9) FINISHED                                                                                                                                                              docker:default
+ => [internal] load build definition from Dockerfile                                                                                                                                                    0.0s
+ => => transferring dockerfile: 156B                                                                                                                                                                    0.0s
+ => [internal] load .dockerignore                                                                                                                                                                       0.0s
+ => => transferring context: 52B                                                                                                                                                                        0.0s
+ => [internal] load metadata for docker.io/library/node:18-alpine                                                                                                                                       0.6s
+ => [1/4] FROM docker.io/library/node:18-alpine@sha256:b1a0356f7d6b86c958a06949d3db3f7fb27f95f627aa6157cb98bc65c801efa2                                                                                 0.0s
+ => [internal] load build context                                                                                                                                                                       0.0s
+ => => transferring context: 151B                                                                                                                                                                       0.0s
+ => CACHED [2/4] WORKDIR dummy-api/                                                                                                                                                                     0.0s
+ => CACHED [3/4] COPY . .                                                                                                                                                                               0.0s
+ => CACHED [4/4] RUN yarn install                                                                                                                                                                       0.0s
+ => exporting to image                                                                                                                                                                                  0.0s
+ => => exporting layers                                                                                                                                                                                 0.0s
+ => => writing image sha256:0cd86c0aae46b10d3fd1ef1e10213eb66b66751c6f23fe93cd89776aa4a3021b                                                                                                            0.0s
+ => => naming to docker.io/library/myapp-1 
+```
+
+However if we  do even a minimum change on the source code;
+
+```diff
+diff --git a/src/projects/dummy-api/app.js b/src/projects/dummy-api/app.js
+index a52b92f..18cb576 100644
+- a/src/projects/dummy-api/app.js
++ b/src/projects/dummy-api/app.js
+@@ -10,3 +10,3 @@ app.get("/", (req, res) => {
+     {
+-      "id": 1,
++      "id": 5,
+       "content": "Dummy content"
+@@ -14,3 +14,3 @@ app.get("/", (req, res) => {
+```
+
+And try to build a new image:
+
+```sh
+docker build -t myapp-2 .
+```
+
+**Output:**
+
+```mono
+[+] Building 8.9s (9/9) FINISHED                                                                                                                                                              docker:default
+ => [internal] load build definition from Dockerfile                                                                                                                                                    0.0s
+ => => transferring dockerfile: 156B                                                                                                                                                                    0.0s
+ => [internal] load .dockerignore                                                                                                                                                                       0.0s
+ => => transferring context: 52B                                                                                                                                                                        0.0s
+ => [internal] load metadata for docker.io/library/node:18-alpine                                                                                                                                       1.5s
+ => [1/4] FROM docker.io/library/node:18-alpine@sha256:b1a0356f7d6b86c958a06949d3db3f7fb27f95f627aa6157cb98bc65c801efa2                                                                                 0.0s
+ => [internal] load build context                                                                                                                                                                       0.0s
+ => => transferring context: 602B                                                                                                                                                                       0.0s
+ => CACHED [2/4] WORKDIR dummy-api/                                                                                                                                                                     0.0s
+ => [3/4] COPY . .                                                                                                                                                                                      0.1s
+ => [4/4] RUN yarn install                                                                                                                                                                              6.3s
+ => exporting to image                                                                                                                                                                                  0.9s 
+ => => exporting layers                                                                                                                                                                                 0.9s 
+ => => writing image sha256:e52cf2854113521e9f50a143005b532e84ca791613d1bce6b574dd8fd3af559b                                                                                                            0.0s 
+ => => naming to docker.io/library/myapp-2                                                                                                                                                              0.0s
+```
+
+You will notice that on the moment docker found the change, specifically on the `COPY` instruction, it stop using caches and rebuilt the following layers from scratch.
+
+So if you look closely you will notice that the following layer after `COPY` instruction is the one we install the dependencies, and although, we didn't change any dependency, still docker rebuild this layer running yarn install, so there's no use to rebuild this layer, that's an issue because is time consuming and we don't need rerun dependencies installation unless we add new dependencies.
+
+#### Fixing dependencies cache issue
+
+Since code changes are more often than dependencies changes there's no much use that we run dependencies installations all the time.
+
+So to fix that we need to improve `Dockerfile` adding a layer that preemptively add all the require dependencies even before copying the complete code, like this:
+
+```Dockerfile
+FROM node:18-alpine
+
+WORKDIR dummy-api/
+
+COPY package.json .
+
+RUN yarn install
+
+COPY . .
+
+EXPOSE 5500
+
+CMD ["node", "app.js", "--port 5500"]
+```
+
+It's a simple change but that will avoid to keep running dependencies installs
+
+```mono
+[+] Building 2.1s (10/10) FINISHED                                                                                                                                                            docker:default
+ => [internal] load build definition from Dockerfile                                                                                                                                                    0.0s
+ => => transferring dockerfile: 179B                                                                                                                                                                    0.0s
+ => [internal] load .dockerignore                                                                                                                                                                       0.0s
+ => => transferring context: 52B                                                                                                                                                                        0.0s
+ => [internal] load metadata for docker.io/library/node:18-alpine                                                                                                                                       1.8s
+ => [1/5] FROM docker.io/library/node:18-alpine@sha256:b1a0356f7d6b86c958a06949d3db3f7fb27f95f627aa6157cb98bc65c801efa2                                                                                 0.0s
+ => [internal] load build context                                                                                                                                                                       0.0s
+ => => transferring context: 607B                                                                                                                                                                       0.0s
+ => CACHED [2/5] WORKDIR dummy-api/                                                                                                                                                                     0.0s
+ => CACHED [3/5] COPY package.json .                                                                                                                                                                    0.0s
+ => CACHED [4/5] RUN yarn install                                                                                                                                                                       0.0s
+ => [5/5] COPY . .                                                                                                                                                                                      0.1s
+ => exporting to image                                                                                                                                                                                  0.1s
+ => => exporting layers                                                                                                                                                                                 0.1s
+ => => writing image sha256:2ce58bc4f680448e1e0c4d84532c9dedfe85ee434dcde073ffb6a980a79e7439                                                                                                            0.0s
+ => => naming to docker.io/library/myapp-4                   
 ```
 
 ## References

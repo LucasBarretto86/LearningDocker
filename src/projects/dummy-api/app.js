@@ -8,8 +8,8 @@ app.use(cors())
 app.get("/", (req, res) => {
   res.json([
     {
-      "id": 1,
-      "content": "Dummy content"
+      "id": 5,
+      "content": "Dummy content has"
     },
     {
       "id": 2,

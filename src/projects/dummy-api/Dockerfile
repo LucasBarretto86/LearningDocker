@@ -2,9 +2,11 @@ FROM node:18-alpine
 
 WORKDIR dummy-api/
 
-COPY . .
+COPY package.json .
 
 RUN yarn install
+
+COPY . .
 
 EXPOSE 5500
 
