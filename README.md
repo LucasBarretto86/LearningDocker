@@ -2,14 +2,24 @@
 
 **GPT: What is Docker?**
 
-> Docker allows you to package an application and its dependencies into a container, which is a lightweight, standalone, and executable software package. These containers run on a shared operating system kernel, but they are isolated from each other. Unlike virtual machines (VMs), which emulate an entire operating system and run on a hypervisor, containers share the host OS kernel and use resources more efficiently. Docker containers provide a consistent and reproducible environment, making it easier to develop, deploy, and scale applications across different environments.
+> Docker allows you to package an application and its dependencies into a
+> container, which is a lightweight, standalone, and executable software package.
+> These containers run on a shared operating system kernel, but they are isolated
+> from each other. Unlike virtual machines (VMs), which emulate an entire
+> operating system and run on a hypervisor, containers share the host OS kernel
+> and use resources more efficiently. Docker containers provide a consistent and
+> reproducible environment, making it easier to develop, deploy, and scale
+> applications across different environments.
 
 **GPT: What is Docker images and containers?**
 
-> **Docker Images:** It's a bundle that packs up all the necessary stuff your software needs to run, like code and tools. Think of it as a snapshot of a complete environment.
+> **Docker Images:** It's a bundle that packs up all the necessary stuff your
+> software needs to run, like code and tools. Think of it as a snapshot of a
+> complete environment.
 >
-> **Docker Containers:** Now take that bundle, unpack it, and run it. A container is like a live, isolated version of your software, doing its job without messing with anything else on your system.
-
+> **Docker Containers:** Now take that bundle, unpack it, and run it. A
+> container is like a live, isolated version of your software, doing its job
+> without messing with anything else on your system.
 ---
 
 **Table of Contents:**
@@ -18,8 +28,8 @@
   - [Get started](#get-started)
   - [Images](#images)
     - [Pulling images](#pulling-images)
-    - [Listing pulled images](#listing-pulled-images)
-    - [Removing pulled images](#removing-pulled-images)
+    - [Listing images](#listing-images)
+    - [Removing images](#removing-images)
     - [Image Commands](#image-commands)
   - [Containers](#containers)
     - [Creating containers](#creating-containers)
@@ -29,17 +39,27 @@
       - [Stopping all at once](#stopping-all-at-once)
     - [Pruning all containers](#pruning-all-containers)
     - [Container commands](#container-commands)
-  - [Dockerfile - Creating and running your own Images](#dockerfile---creating-and-running-your-own-images)
-    - [Parent Image (a.k.a base image)](#parent-image-aka-base-image)
-    - [Copy source code](#copy-source-code)
-    - [Installing dependencies](#installing-dependencies)
-    - [Exposing container port](#exposing-container-port)
-    - [Running commands](#running-commands)
+  - [Creating and running your own Images](#creating-and-running-your-own-images)
+    - [`Dockerfile`](#dockerfile)
+      - [Create `Dockerfile`](#create-dockerfile)
+      - [Adding parent Image (a.k.a base image)](#adding-parent-image-aka-base-image)
+      - [Copying source code](#copying-source-code)
+      - [Installing dependencies](#installing-dependencies)
+      - [Exposing container port](#exposing-container-port)
+      - [Running commands](#running-commands)
     - [Building image](#building-image)
+      - [Building images with tag](#building-images-with-tag)
     - [Running image](#running-image)
+      - [Running Image with options](#running-image-with-options)
     - [`.dockerignore`](#dockerignore)
     - [Layer Caching](#layer-caching)
       - [Fixing dependencies cache issue](#fixing-dependencies-cache-issue)
+  - [Volumes](#volumes)
+    - [Creating volume](#creating-volume)
+  - [Commands table](#commands-table)
+    - [Options table](#options-table)
+      - [`docker run`](#docker-run)
+      - [`docker build`](#docker-build)
   - [References](#references)
 
 ---
@@ -115,17 +135,22 @@ For more examples and ideas, visit:
 
 ## Images
 
-The first use an image will be downloading it from [Docker hub](https://hub.docker.com/) in our example we will be looking for the official `node` parent image (a.k.a base image)
+The first use an image will be downloading it
+from [Docker hub](https://hub.docker.com/) in our example we will be looking for
+the official `node` parent image (a.k.a base image)
 
 On the Docker Hub we search for `node`
 
 ![Docker hub search](src/images/docker-hub-search.png)
 
-To download the official image that will be our parent image (a.k.a base image), you will notice a field with the respective command do download it:
+To download the official image that will be our parent image (a.k.a base image),
+you will notice a field with the respective command do download it:
 
 ![Download command](src/images/docker-hub-command.png)
 
-But this the basic command, this will install the latest image version, if you want to install a specific version you will have to check the `Tag` section that lists all the available versions that can be used
+But this the basic command, this will install the latest image version, if you
+want to install a specific version you will have to check the `Tag` section that
+lists all the available versions that can be used
 
 ![Downloadable tags](src/images/docker-hub-tags.png)
 
@@ -159,7 +184,7 @@ Status: Downloaded newer image for node:latest
 docker.io/library/node:latest
 ```
 
-### Listing pulled images
+### Listing images
 
 To list the images pulled run:
 
@@ -192,9 +217,10 @@ node:latest
 hello-world:latest
 ```
 
-### Removing pulled images
+### Removing images
 
-To remove a image that is no longer used we use the following syntax: `docker rmi [OPTIONS] IMAGE[:TAG|@DIGEST]`
+To remove a image that is no longer used we use the following
+syntax: `docker rmi [OPTIONS] IMAGE[:TAG|@DIGEST]`
 
 Let's remove the `hello-world` image used to test docker installation
 
@@ -208,13 +234,15 @@ docker rmi hello-world:latest
 Error response from daemon: conflict: unable to remove repository reference "hello-world:latest" (must force) - container daef4bf20a61 is using its referenced image 9c7a54a9a43c
 ```
 
-Okay since the image is installed with docker we have to force it to be removed, for that we use the option `-f` just like we do with github
+Okay since the image is installed with docker we have to force it to be removed,
+for that we use the option `-f` just like we do with github
 
 ```sh
 docker rmi hello-world:latest -f
 ```
 
-> Notice that the container also an be removed by it's ID, it would be something like that `docker rmi 1f33c17521fc -f`
+> Notice that the container also an be removed by it's ID, it would be something
+> like that `docker rmi 1f33c17521fc -f`
 
 **Output:**
 
@@ -241,24 +269,25 @@ node         latest    b866e35a0dc4   12 days ago   1.1GB
 
 Use `docker image` to list all available images commands
 
-| Command    | Description                                                                      |
-| :--------- | :------------------------------------------------------------------------------- |
-| build      | Build an image from a Dockerfile                                                 |
-| history    | Show the history of an image                                                     |
-| import     | Import the contents from a tarball to create a filesystem image                  |
-| inspect    | Display detailed information on one or more images                               |
-| load       | Load an image from a tar archive or STDIN                                        |
-| ls         | List images                                                                      |
-| prune      | Remove unused images                                                             |
-| pull       | Download an image from a registry                                                |
-| push       | Upload an image to a registry                                                    |
-| rm         | Remove one or more images                                                        |
-| save       | Save one or more images to a tar archive (streamed to STDOUT by default)         |
-| tag        | Create a tag TARGET_IMAGE that refers to SOURCE_IMAGE                            |
+| **Command** | **Description**                                                          |
+|:------------|:-------------------------------------------------------------------------|
+| build       | Build an image from a Dockerfile                                         |
+| history     | Show the history of an image                                             |
+| import      | Import the contents from a tarball to create a filesystem image          |
+| inspect     | Display detailed information on one or more images                       |
+| load        | Load an image from a tar archive or STDIN                                |
+| ls          | List images                                                              |
+| prune       | Remove unused images                                                     |
+| pull        | Download an image from a registry                                        |
+| push        | Upload an image to a registry                                            |
+| rm          | Remove one or more images                                                |
+| save        | Save one or more images to a tar archive (streamed to STDOUT by default) |
+| tag         | Create a tag TARGET_IMAGE that refers to SOURCE_IMAGE                    |
 
 ## Containers
 
-Containers are running instances of images, since images are the blueprint of a container a running image produces a container
+Containers are running instances of images, since images are the blueprint of a
+container a running image produces a container
 
 ### Creating containers
 
@@ -268,7 +297,9 @@ To create a containers we need to run the image we pulled from the Docker Hub
 docker run node:latest 
 ```
 
-You will notice that nothing will happen in some cases, but keep in mind that this is okay, alternatively you can use the option `-it` to run the container in interactive mode and get a shell prompt within the container
+You will notice that nothing will happen in some cases, but keep in mind that
+this is okay, alternatively you can use the option `-it` to run the container in
+interactive mode and get a shell prompt within the container
 
 ```sh
 docker run -it node:latest
@@ -299,9 +330,11 @@ CONTAINER ID   IMAGE          COMMAND                  CREATED              STAT
 58cdb651af75   my-dummy-api   "docker-entrypoint.s…"   About a minute ago   Exited (137) 8 seconds ago             amazing_carson
 ```
 
-Noticed that the status column shows `Exited` which means this container is stopped
+Noticed that the status column shows `Exited` which means this container is
+stopped
 
-So to start this existing container we need to run the `start` command giving it's name or Id as parameter
+So to start this existing container we need to run the `start` command giving
+it's name or Id as parameter
 
 ```sh
 docker start amazing_carson
@@ -313,7 +346,10 @@ docker start 58cdb651af75
 
 ### Listing containers
 
-To check the list of running Docker containers, you can use the docker ps command. By default, this command shows you the currently running containers along with some basic information such as the container ID, names, ports, and status.
+To check the list of running Docker containers, you can use the docker ps
+command. By default, this command shows you the currently running containers
+along with some basic information such as the container ID, names, ports, and
+status.
 
 ```sh
 docker ps
@@ -326,7 +362,8 @@ CONTAINER ID   IMAGE         COMMAND                  CREATED              STATU
 1e01607fe8fb   node:latest   "docker-entrypoint.s…"   About a minute ago   Up About a minute             great_mccarthy
 ```
 
-If you want to check all containers including those which are stopped you ca add the option `-a`
+If you want to check all containers including those which are stopped you ca add
+the option `-a`
 
 ```sh
 docker ps -a
@@ -566,7 +603,9 @@ docker inspect great_mccarthy
 
 ### Stopping containers
 
-To stop a docker container you can use the syntax `docker stop [OPTIONS] CONTAINER [CONTAINER...]` in our example it would be like this:
+To stop a docker container you can use the
+syntax `docker stop [OPTIONS] CONTAINER [CONTAINER...]` in our example it would
+be like this:
 
 ```sh
 docker inspect 1e01607fe8fb
@@ -578,7 +617,8 @@ docker stop great_mccarthy
 
 #### Stopping all at once
 
-We could also stop various containers giving multiple ids or tags on a single command, but in cases you want stop all at once there's a small trick:
+We could also stop various containers giving multiple ids or tags on a single
+command, but in cases you want stop all at once there's a small trick:
 
 ```sh
 docker stop $(docker ps -q)
@@ -586,7 +626,10 @@ docker stop $(docker ps -q)
 
 ### Pruning all containers
 
-Just as git keeps various branches on disk, docker also keeps various containers on disk as you ran it, so to ensure that we have a clean slat to create and tag our containers we might want to remove all existing containers, for that we use the `prune` command
+Just as git keeps various branches on disk, docker also keeps various containers
+on disk as you ran it, so to ensure that we have a clean slat to create and tag
+our containers we might want to remove all existing containers, for that we use
+the `prune` command
 
 First lets list our containers:
 
@@ -615,7 +658,8 @@ d34a540e9ab3   my-dummy-api   "docker-entrypoint.s…"   7 minutes ago    Create
 5e818760d68b   my-dummy-api   "docker-entrypoint.s…"   12 minutes ago   Exited (137) 5 minutes ago             container-1
 ```
 
-To remove a single container we use `rm` or `rmi`, but to remove it all from the disk we use:
+To remove a single container we use `rm` or `rmi`, but to remove it all from the
+disk we use:
 
 ```sh
 docker container prune
@@ -642,67 +686,78 @@ d34a540e9ab3a581ed8389bb5322a0a5aadb3ae0a6f498381e55a15046eb29d4
 5e818760d68b0fc9f6529fdd411c48c3fad07f3074e80cea8f1696325bcefdd2
 ```
 
-> Notice that before proceed ir will ask if you are sure about the removal, to move along and remove it all you must prompt `y`
+> Notice that before proceed ir will ask if you are sure about the removal, to
+> move along and remove it all you must prompt `y`
 
 ### Container commands
 
 Use `docker container` to check all the available commands for containers
 
-| Command    | Description                                                                      |
-| :--------- | :------------------------------------------------------------------------------- |
-| attach     | Attach local standard input, output, and error streams to a running container    |
-| commit     | Create a new image from a container's changes                                    |
-| cp         | Copy files/folders between a container and the local filesystem                  |
-| create     | Create a new container                                                           |
-| diff       | Inspect changes to files or directories on a container's filesystem              |
-| exec       | Execute a command in a running container                                         |
-| export     | Export a container's filesystem as a tar archive                                 |
-| inspect    | Display detailed information on one or more containers                           |
-| kill       | Kill one or more running containers                                              |
-| logs       | Fetch the logs of a container                                                    |
-| ls         | List containers                                                                  |
-| pause      | Pause all processes within one or more containers                                |
-| port       | List port mappings or a specific mapping for the container                       |
-| prune      | Remove all stopped containers                                                    |
-| rename     | Rename a container                                                               |
-| restart    | Restart one or more containers                                                   |
-| rm         | Remove one or more containers                                                    |
-| run        | Create and run a new container from an image                                     |
-| start      | Start one or more stopped containers                                             |
-| stats      | Display a live stream of container(s) resource usage statistics                  |
-| stop       | Stop one or more running containers                                              |
-| top        | Display the running processes of a container                                     |
-| unpause    | Unpause all processes within one or more containers                              |
-| update     | Update configuration of one or more containers                                   |
-| wait       | Block until one or more containers stop, then print their exit codes             |
+| **Command** | **Description**                                                               |
+|:------------|:------------------------------------------------------------------------------|
+| attach      | Attach local standard input, output, and error streams to a running container |
+| commit      | Create a new image from a container's changes                                 |
+| cp          | Copy files/folders between a container and the local filesystem               |
+| create      | Create a new container                                                        |
+| diff        | Inspect changes to files or directories on a container's filesystem           |
+| exec        | Execute a command in a running container                                      |
+| export      | Export a container's filesystem as a tar archive                              |
+| inspect     | Display detailed information on one or more containers                        |
+| kill        | Kill one or more running containers                                           |
+| logs        | Fetch the logs of a container                                                 |
+| ls          | List containers                                                               |
+| pause       | Pause all processes within one or more containers                             |
+| port        | List port mappings or a specific mapping for the container                    |
+| prune       | Remove all stopped containers                                                 |
+| rename      | Rename a container                                                            |
+| restart     | Restart one or more containers                                                |
+| rm          | Remove one or more containers                                                 |
+| run         | Create and run a new container from an image                                  |
+| start       | Start one or more stopped containers                                          |
+| stats       | Display a live stream of container(s) resource usage statistics               |
+| stop        | Stop one or more running containers                                           |
+| top         | Display the running processes of a container                                  |
+| unpause     | Unpause all processes within one or more containers                           |
+| update      | Update configuration of one or more containers                                |
+| wait        | Block until one or more containers stop, then print their exit codes          |
 
-## Dockerfile - Creating and running your own Images
+## Creating and running your own Images
 
-Images are constituted by layers, these layers are responsible to define each part of the structure that our container will have
+Images are constituted by layers, these layers are responsible to define each
+part of the structure that our container will have
 
-The initial layer of a image is called `parent image (a.k.a base image)`, it will include the OS and some other runtime environment configuration
+The initial layer of a image is called `parent image (a.k.a base image)`, it
+will include the OS and some other runtime environment configuration
 
-The following layers are used to download the source code and its dependencies, and the last layer is the layer where we will run the necessary commands to make our container ready use
+The following layers are used to download the source code and its dependencies,
+and the last layer is the layer where we will run the necessary commands to make
+our container ready use
 
-To be able to create a docker image and specify each layer behavior we will need to create a `Dockerfile`
+To be able to create a docker image and specify each layer behavior we will need
+to create a `Dockerfile`
+
+> In order to learn hands-on we will use a dummy project for the following
+> topics
+>
+> [Example: Project: dummy-api](./src/projects/dummy-api/app.js)
+
+### `Dockerfile`
 
 **GPT: What is a Dockerfile?**
 
-> A Dockerfile is a text file that contains instructions for building a Docker image. It serves as a blueprint for creating a lightweight, portable, and self-sufficient containerized application. The Dockerfile includes commands to specify the parent image (a.k.a base image), set up the environment, copy files, install dependencies, and configure the application. When the Dockerfile is used with the docker build command, it produces a Docker image that encapsulates the application and its dependencies, allowing for consistent deployment across different environments.
+> A Dockerfile is a text file that contains instructions for building a Docker
+> image. It serves as a blueprint for creating a lightweight, portable, and
+> self-sufficient containerized application. The Dockerfile includes commands to
+> specify the parent image (a.k.a base image), set up the environment, copy files,
+> install dependencies, and configure the application. When the Dockerfile is used
+> with the docker build command, it produces a Docker image that encapsulates the
+> application and its dependencies, allowing for consistent deployment across
+> different environments.
 
-In order to learn hands-on I created a dummy project that will be used on the following topics
+#### Create `Dockerfile`
 
-[Example: Project: dummy-api](/src/projects/dummy-api/app.js)
-
-```tree
-.
-├── app.js
-└── package.json
-```
-
-So to be able to run our dummy project within a container we gonna have to create an image that will be contain all the necessary configurations to run our application that's when dockerfile comes in.
-
-So within our dummy project we are going to create a file called `Dockerfile` without any extension
+So within our dummy project we are going to create a file called `Dockerfile`
+without any extension
 
 ```tree
 .
@@ -711,9 +766,10 @@ So within our dummy project we are going to create a file called `Dockerfile` wi
 └── package.json
 ```
 
-### Parent Image (a.k.a base image)
+#### Adding parent Image (a.k.a base image)
 
-On or Dockerfile each instruction is a layer the first instruction will be reference to our parent image (a.k.a base image)
+On or `Dockerfile` each instruction is a layer the first instruction will be
+reference to our parent image
 
 ```Dockerfile
 # ./Dockerfile
@@ -723,9 +779,11 @@ FROM node:18-alpine
 
 > Notice that it doesn't need to be necessarily the on we pulled locally
 
-### Copy source code
+#### Copying source code
 
-The second layer will be the copy of our source code, the syntax is `COPY %FROM% %TO%`, in our case `%FROM%` = `.` (current folder) `%TO%` = `dummy-api/`
+The second layer will be the copy of our source code, the syntax
+is `COPY %FROM% %TO%`, in our case `%FROM%` = `.` (current
+folder) `%TO%` = `dummy-api/`
 
 ```Dockerfile
 # ./Dockerfile
@@ -735,11 +793,16 @@ FROM node:18-alpine
 COPY . dummy-api/
 ```
 
-### Installing dependencies
+#### Installing dependencies
 
-First to guarantee that the commands we are going to run on the container will be ran on the exact root of our project we are going to add the instruction `ẀORKDIR` soon after the `FROM` instruction, by that we specify the root folder of our container.
+First to guarantee that the commands we are going to run on the container will
+be ran on the exact root of our project we are going to add the
+instruction `ẀORKDIR` soon after the `FROM` instruction, by that we specify the
+root folder of our container.
 
-After that we will have to adjust the destination for our `COPY` instruction, since we are defining the `ẀORKDIR` we no longer need to specify the destination path as we copy because docker will already know where to put the project files.
+After that we will have to adjust the destination for our `COPY` instruction,
+since we are defining the `ẀORKDIR` we no longer need to specify the destination
+path as we copy because docker will already know where to put the project files.
 
 Soon as we set this up we are ready to set the `RUN` to install our dependencies
 
@@ -755,9 +818,11 @@ COPY . .
 RUN yarn install
 ```
 
-### Exposing container port
+#### Exposing container port
 
-To be specify tje port our containerized environment will be listening the application on the during runtime we need use the `EXPOSE` instruction, it's optional but it can be helpful.
+To be specify tje port our containerized environment will be listening the
+application on the during runtime we need use the `EXPOSE` instruction, it's
+optional but it can be helpful.
 
 ```Dockerfile
 # ./Dockerfile
@@ -773,11 +838,16 @@ RUN yarn install
 EXPOSE 5500
 ```
 
-> Keep in mind that `EXPOSE` doesn't mean that the local machine will have direct communication with the container itself, for that we use other options as we run the the container image
+> Keep in mind that `EXPOSE` doesn't mean that the local machine will have
+> direct communication with the container itself, for that we use other options as
+> we run the the container image
 
-### Running commands
+#### Running commands
 
-After we added the basic instruction to create or container we need to provide the necessary commands that needs to be executed as the container gets running, for that we will use the instruction `CMD`,sending an Array of strings with instruction as parameter:
+After we added the basic instruction to create or container we need to provide
+the necessary commands that needs to be executed as the container gets running,
+for that we will use the instruction `CMD`,sending an Array of strings with
+instruction as parameter:
 
 ```Dockerfile
 # ./Dockerfile
@@ -799,13 +869,15 @@ CMD ["node", "app.js", "--port 5500"]
 
 ### Building image
 
-After creating the Dockerfile the next step will be to produce a Docker image from it:
+After creating the Dockerfile the next step will be to produce a Docker image
+from it:
 
 ```sh
 docker build -t my-dummy-api .
 ```
 
-> The option `-t` allow us to give a tag name for our image and the `.` means where the Dockerfile is relatively to where the build command is called
+> The option `-t` allow us to give a tag name for our image and the `.` means
+> where the Dockerfile is relatively to where the build command is called
 
 **Output:**
 
@@ -825,16 +897,35 @@ docker build -t my-dummy-api .
  => exporting to image                                                                                                                    0.9s
  => => exporting layers                                                                                                                   0.8s
  => => writing image sha256:0cd86c0aae46b10d3fd1ef1e10213eb66b66751c6f23fe93cd89776aa4a3021b                                              0.0s 
- => => naming to docker.io/library/my-dummy-api                                                                                           0.0s ```
+ => => naming to docker.io/library/my-dummy-api                                                                                           0.0s
+```
+
+#### Building images with tag
+
+Docker also allow us to create images with tags, that allow us to have some sort
+of organization to our images, to create image with tag we are going to use `:`
+
+```sh
+docker build -t my-dummy-api:v1 .
+```
+
+After that if we list the images `docker images`:
+
+```mono
+REPOSITORY     TAG       IMAGE ID       CREATED          SIZE
+my-dummy-api   v1        2d4a40f2d79f   11 seconds ago   139MB
+node           latest    b866e35a0dc4   2 weeks ago      1.1GB
 ```
 
 ### Running image
 
-As we created our own image we manage to specify each port we want to `EXPOSE` as a way of communication between the container and its outer environment
+As we created our own image we manage to specify each port we want to `EXPOSE`
+as a way of communication between the container and its outer environment
 
 In our example we are using port 5500
 
-If we simply run our image without specify the port we exposed we won't able to access the application we are running within our container
+If we simply run our image without specify the port we exposed we won't able to
+access the application we are running within our container
 
 ```sh
 docker run my-dummy-api
@@ -846,9 +937,10 @@ docker run my-dummy-api
 listening for requests on port 5500
 ```
 
-If we try to access the localhost on the port `5500` without mentioning it on the run command, this what we get:
+If we try to access the localhost on the port `5500` without mentioning it on
+the run command, this what we get:
 
-![Localhost without forwarding port](/src/images/docker-port-not-exposed.png)
+![Localhost without forwarding port](./src/images/docker-port-not-exposed.png)
 
 When we use the command forwarding the port accordingly:
 
@@ -856,13 +948,18 @@ When we use the command forwarding the port accordingly:
 docker run -p 8080:5500 my-dummy-api
 ```
 
-> Notice that I don't need necessary forward port `5500` to the same port on my external environment, we can forward for any port currently available
+> Notice that I don't need necessary forward port `5500` to the same port on my
+> external environment, we can forward for any port currently available
 
-![Localhost forwarding port](/src/images/docker-port-exposed.png)
+![Localhost forwarding port](./src/images/docker-port-exposed.png)
 
-Another useful option to the run command is the `--name` option, which allow you to defined custom naming for your container
+#### Running Image with options
 
-Let's also add the option `-d` to start or container but without blocking the terminal
+Another useful option to the run command is the `--name` option, which allow you
+to defined custom naming for your container
+
+Let's also add the option `-d` to start or container but without blocking the
+terminal
 
 ```sh
 docker run --name=container-1 -d -p 8080:5500 my-dummy-api
@@ -875,11 +972,18 @@ CONTAINER ID   IMAGE          COMMAND                  CREATED         STATUS   
 5e818760d68b   my-dummy-api   "docker-entrypoint.s…"   8 seconds ago   Up 6 seconds   0.0.0.0:8080->5500/tcp, :::8080->5500/tcp   container-1
 ```
 
-> Keep in mind that the `run` command is used to create a container, which means that if you already have used it once and just want to start the existing container use the `start` command giving the container tag as parameter so it will keep all the definitions used to create the container like name, port and etc..
+> Keep in mind that the `run` command is used to create a container, which means
+> that if you already have used it once and just want to start the existing
+> container use the `start` command giving the container tag as parameter so it
+> will keep all the definitions used to create the container like name, port and
+> etc..
 
 ### `.dockerignore`
 
-Just as git, docker also have a way to ignore files that you don't want to add to your image, in our case we just are going to ignore `node_modules`, because since we are going to run our application from the container we don't need to add local dependencies and that might reduce the size of our image
+Just as git, docker also have a way to ignore files that you don't want to add
+to your image, in our case we just are going to ignore `node_modules`, because
+since we are going to run our application from the container we don't need to
+add local dependencies
 
 ```sh
 # .dockerignore
@@ -889,7 +993,12 @@ node_modules
 
 ### Layer Caching
 
-When we look at our `Dockerfile` every instruction that we added is defined an image layer, by default, while building an image, docker will check for each layer if there's any existing cache, if doesn't then it will operate the instruction to build the layer, if it does then it will use the cached layer and skip to the next instruction. So, if we try to build a new image based on our unchanged source code and `Dockerfile`:
+When we look at our `Dockerfile` every instruction that we added is defined an
+image layer, by default, while building an image, docker will check for each
+layer if there's any existing cache, if doesn't then it will operate the
+instruction to build the layer, if it does then it will use the cached layer and
+skip to the next instruction. So, if we try to build a new image based on our
+unchanged source code and `Dockerfile`:
 
 ```sh
 docker build -t myapp-1 .
@@ -916,13 +1025,13 @@ You will notice that most of the layers will be build using cache:
  => => naming to docker.io/library/myapp-1 
 ```
 
-However if we  do even a minimum change on the source code;
+However if we do even a minimum change on the source code;
 
 ```diff
-diff --git a/src/projects/dummy-api/app.js b/src/projects/dummy-api/app.js
+diff --git a./src/projects/dummy-api/app.js b./src/projects/dummy-api/app.js
 index a52b92f..18cb576 100644
-- a/src/projects/dummy-api/app.js
-+ b/src/projects/dummy-api/app.js
+- a./src/projects/dummy-api/app.js
++ b./src/projects/dummy-api/app.js
 @@ -10,3 +10,3 @@ app.get("/", (req, res) => {
      {
 -      "id": 1,
@@ -958,15 +1067,25 @@ docker build -t myapp-2 .
  => => naming to docker.io/library/myapp-2                                                                                                                                                              0.0s
 ```
 
-You will notice that on the moment docker found the change, specifically on the `COPY` instruction, it stop using caches and rebuilt the following layers from scratch.
+You will notice that on the moment docker found the change, specifically on
+the `COPY` instruction, it stop using caches and rebuilt the following layers
+from scratch.
 
-So if you look closely you will notice that the following layer after `COPY` instruction is the one we install the dependencies, and although, we didn't change any dependency, still docker rebuild this layer running yarn install, so there's no use to rebuild this layer, that's an issue because is time consuming and we don't need rerun dependencies installation unless we add new dependencies.
+So if you look closely you will notice that the following layer after `COPY`
+instruction is the one we install the dependencies, and although, we didn't
+change any dependency, still docker rebuild this layer running yarn install, so
+there's no use to rebuild this layer, that's an issue because is time consuming
+and we don't need rerun dependencies installation unless we add new
+dependencies.
 
 #### Fixing dependencies cache issue
 
-Since code changes are more often than dependencies changes there's no much use that we run dependencies installations all the time.
+Since code changes are more often than dependencies changes there's no much use
+that we run dependencies installations all the time.
 
-So to fix that we need to improve `Dockerfile` adding a layer that preemptively add all the require dependencies even before copying the complete code, like this:
+So to fix that we need to improve `Dockerfile` adding a layer that preemptively
+add all the require dependencies even before copying the complete code, like
+this:
 
 ```Dockerfile
 FROM node:18-alpine
@@ -1003,8 +1122,115 @@ It's a simple change but that will avoid to keep running dependencies installs
  => exporting to image                                                                                                                                                                                  0.1s
  => => exporting layers                                                                                                                                                                                 0.1s
  => => writing image sha256:2ce58bc4f680448e1e0c4d84532c9dedfe85ee434dcde073ffb6a980a79e7439                                                                                                            0.0s
- => => naming to docker.io/library/myapp-4                   
+ => => naming to docker.io/library/myapp-4
 ```
+
+## Volumes
+
+**GPT: What is Docker volumes?**
+
+> Docker volumes are a way to persist and share data between Docker containers
+> and between a Docker host and its containers. Volumes provide a mechanism to
+> store and manage data separately from the container filesystem, ensuring that
+> data persists even when containers are stopped or removed.
+
+So docker volumes are basically a host dir that we allow our container to access
+
+**Practical example:**
+
+Until this point the only way to make a container to pull project changes from
+the host side is by build a new image after the changes are made, so that's when
+volumes comes in, because by using volumes are basically a sharable directory
+between the host and our containers, removing the need to keep building new
+images every time we make some change on the host project.
+
+### Creating volume
+
+To create volumes basically we need to define the option `-v` on the moment we
+run for the first time an image
+
+But there's a catch here, we can add multiple times the option `-v` to enable
+our project to access various directories, however there's a precedency based on
+the volume path:
+
+```sh
+# docker run --name <name> -p <local-port>:<docker-port> -v <volume-absolute-path>:<workdir> <image>
+
+docker run --name myapp -p 8080:5500 -v /home/barretto86/Projects/OthersProjects/LearningDocumentation/specifics/LearningDocker/src/projects/dummy-api:/app my-dummy-api
+```
+
+## Commands table
+
+| **Command**                             | **Description**                                                                      |
+|-----------------------------------------|--------------------------------------------------------------------------------------|
+| `docker --version`                      | Display the Docker version.                                                          |
+| `docker pull <image>`                   | Pull an image from a registry.                                                       |
+| `docker images`                         | List all locally stored images.                                                      |
+| `docker ps`                             | List running containers.                                                             |
+| `docker ps -a`                          | List all containers, including stopped ones.                                         |
+| `docker run <image>`                    | Create and start a container from an image. [run options](#docker-run-options-table) |
+| `docker exec -it <container> /bin/bash` | Open an interactive shell in a running container.                                    |
+| `docker build -t <image-name> .`        | Build a Docker image from the current directory. [build options](#docker-build)      |
+| `docker-compose up`                     | Start services defined in `docker-compose.yml`.                                      |
+| `docker-compose down`                   | Stop and remove services defined in `docker-compose.yml`.                            |
+| `docker-compose logs`                   | View container logs from services in `docker-compose.yml`.                           |
+| `docker network ls`                     | List Docker networks.                                                                |
+| `docker volume ls`                      | List Docker volumes.                                                                 |
+| `docker stop <container>`               | Stop a running container.                                                            |
+| `docker start <container>`              | Start a stopped container.                                                           |
+| `docker start -i <container>`           | Start a stopped container with interactive mode                                      |
+| `docker restart <container>`            | Restart a running or stopped container.                                              |
+| `docker pause <container>`              | Pause all processes within a container.                                              |
+| `docker unpause <container>`            | Unpause a paused container.                                                          |
+| `docker rm <container>`                 | Remove a stopped container.                                                          |
+| `docker rmi <image>`                    | Remove a Docker image.                                                               |
+| `docker system prune`                   | Remove all stopped containers, unused networks, and dangling images.                 |
+| `docker system prune -a`                | Remove all images and containers.                                                    |
+| `docker info`                           | Display system-wide information about Docker.                                        |
+
+### Options table
+
+#### `docker run`
+
+| **Option**                              | **Description**                                                   |
+|-----------------------------------------|-------------------------------------------------------------------|
+| `-d`, `--detach`                        | Run the container in the background (detached mode).              |
+| `--name <name>`                         | Assign a name to the container.                                   |
+| `-it`, `--interactive`, `--tty`         | Launch an interactive session with a pseudo-TTY.                  |
+| `--rm`                                  | Automatically remove the container when it exits.                 |
+| `-p <host-port>:<container-port>`       | Publish a container's port(s) to the host.                        |
+| `-e, --env <key=value>`                 | Set environment variables in the form key=value.                  |
+| `--volume <host-path>:<container-path>` | Bind mount a volume from the host into the container.             |
+| `--volumes-from <container>`            | Mount volumes from the specified container.                       |
+| `--network <network>`                   | Connect the container to a specified network.                     |
+| `--link <container-name>:<alias>`       | Add a link to another container.                                  |
+| `--restart <policy>`                    | Restart policy to apply when a container exits.                   |
+| `--memory <size>`                       | Limit the memory usage of the container.                          |
+| `--cpus <value>`                        | Limit the CPUs a container can use.                               |
+| `--env-file <file>`                     | Read environment variables from a file.                           |
+| `--entrypoint <command>`                | Override the default entry point specified in the image.          |
+| `--workdir <path>`                      | Set the working directory inside the container.                   |
+| `--user <username[:group]>`             | Specify the username or UID and optional group for the container. |
+| `--hostname <name>`                     | Set the hostname of the container.                                |
+| `--privileged`                          | Give extended privileges to the container.                        |
+| `--cap-add <capability>`                | Add Linux capabilities to the container.                          |
+| `--cap-drop <capability>`               | Drop Linux capabilities from the container.                       |
+
+#### `docker build`
+
+| **Option**                | **Description**                                                 |
+|---------------------------|-----------------------------------------------------------------|
+| `-t <name:tag>`           | Name and optionally a tag in the 'name:tag' format.             |
+| `-f, --file <path>`       | Specify the Dockerfile location (default is 'PATH/Dockerfile'). |
+| `--build-arg <key=value>` | Set build-time variables.                                       |
+| `--no-cache`              | Do not use the cache when building the image.                   |
+| `--rm`                    | Remove intermediate containers after a successful build.        |
+| `--target <stage>`        | Set the target build stage to build.                            |
+| `--network <network>`     | Set the networking mode for the RUN instructions during build.  |
+| `--squash`                | Squash the resulting image layers into a single layer.          |
+| `--pull`                  | Always attempt to pull a newer version of the base image.       |
+| `--compress`              | Compress the build context using gzip.                          |
+| `--progress <type>`       | Set type of progress output (`auto`, `plain`, `tty`).           |
 
 ## References
 
