@@ -241,7 +241,7 @@ for that we use the option `-f` just like we do with github
 docker rmi hello-world:latest -f
 ```
 
-> Notice that the container also an be removed by it's ID, it would be something
+> **Notice:** that the container also an be removed by it's ID, it would be something
 > like that `docker rmi 1f33c17521fc -f`
 
 **Output:**
@@ -686,7 +686,7 @@ d34a540e9ab3a581ed8389bb5322a0a5aadb3ae0a6f498381e55a15046eb29d4
 5e818760d68b0fc9f6529fdd411c48c3fad07f3074e80cea8f1696325bcefdd2
 ```
 
-> Notice that before proceed ir will ask if you are sure about the removal, to
+> **Notice:** that before proceed ir will ask if you are sure about the removal, to
 > move along and remove it all you must prompt `y`
 
 ### Container commands
@@ -777,7 +777,7 @@ reference to our parent image
 FROM node:18-alpine
 ```
 
-> Notice that it doesn't need to be necessarily the on we pulled locally
+> **Notice:** that it doesn't need to be necessarily the on we pulled locally
 
 #### Copying source code
 
@@ -948,7 +948,7 @@ When we use the command forwarding the port accordingly:
 docker run -p 8080:5500 my-dummy-api
 ```
 
-> Notice that I don't need necessary forward port `5500` to the same port on my
+> **Notice:** that I don't need necessary forward port `5500` to the same port on my
 > external environment, we can forward for any port currently available
 
 ![Localhost forwarding port](./src/images/docker-port-exposed.png)
