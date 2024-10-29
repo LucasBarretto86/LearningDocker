@@ -26,6 +26,7 @@
     - [Docker compose Installation](#docker-compose-installation)
     - [`docker-compose.yml` directives](#docker-composeyml-directives)
   - [Commands References](#commands-references)
+    - [System commands](#system-commands)
     - [Container commands](#container-commands)
     - [Image commands](#image-commands)
     - [Docker Compose commands](#docker-compose-commands)
@@ -679,6 +680,18 @@ This example defines a web service using Nginx and a database service using Post
 
 ## Commands References
 
+### System commands
+
+Here’s a table of common `docker system` commands with descriptions:
+
+| Command  | Description                                                                                           |
+| -------- | ----------------------------------------------------------------------------------------------------- |
+| df       | Shows disk usage by images, containers, and volumes.                                                  |
+| prune    | Removes unused data, including stopped containers, unused networks, dangling images, and build cache. |
+| prune -a | Removes all unused data, including unused images (not just dangling).                                 |
+| info     | Displays detailed information about the Docker environment and system resources.                      |
+| events   | Shows real-time events from the Docker daemon.                                                        |
+
 ### Container commands
 
 Use `docker container` to check all the available commands for containers
@@ -734,8 +747,8 @@ Use `docker image` to list all available images commands
 
 Use `docker-compose` to list all available images commands
 
-| Command                  | Description                                                        |
-| ------------------------ | ------------------------------------------------------------------ |
+| Command | Description                                                        |
+| ------- | ------------------------------------------------------------------ |
 | up      | Starts the defined services and builds images if needed.           |
 | down    | Stops and removes the containers, networks, and volumes.           |
 | build   | Builds the images for the services defined in the Compose file.    |
