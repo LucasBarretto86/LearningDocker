@@ -19,12 +19,15 @@
     - [Stopping containers](#stopping-containers)
       - [Stopping all at once](#stopping-all-at-once)
     - [Removing containers](#removing-containers)
-    - [Prune containers](#prune-containers)
+    - [Prune all stopped containers](#prune-all-stopped-containers)
+    - [Cleaning up multiple unused Docker resources](#cleaning-up-multiple-unused-docker-resources)
   - [`Dockerfile`](#dockerfile)
     - [`Dockerfile` directives](#dockerfile-directives)
   - [Docker Compose](#docker-compose)
     - [Docker compose Installation](#docker-compose-installation)
     - [`docker-compose.yml` directives](#docker-composeyml-directives)
+    - [Creating docker-compose images and containers](#creating-docker-compose-images-and-containers)
+    - [Stopping docker-compose containers](#stopping-docker-compose-containers)
   - [Commands References](#commands-references)
     - [System commands](#system-commands)
     - [Container commands](#container-commands)
@@ -582,13 +585,21 @@ docker rm 800c589eed29
 
 > It's also possible to force a removal by isn't recommended, in that case we would use `rmi` instead of `rm`
 
-### Prune containers
+### Prune all stopped containers
 
-To remove a single stopped container we use `rm` or `rmi`, but we can remove all at once from the disk:
+To remove all at once from the disk
 
 ```sh
 #  Removes only stopped containers
 docker container prune
+```
+
+### Cleaning up multiple unused Docker resources
+
+Use docker system prune to clean up multiple unused Docker resources at once.
+
+```sh
+docker system prune
 ```
 
 ## `Dockerfile`
@@ -677,6 +688,22 @@ networks:
 ```
 
 This example defines a web service using Nginx and a database service using Postgres, with appropriate configurations for ports, volumes, and networks.
+
+### Creating docker-compose images and containers
+
+To create the images and run the containers (services) from the Docker Compose, we use:
+
+```sh
+docker-compose up
+```
+
+### Stopping docker-compose containers
+
+To stop the services we use `down` it also removes the containers created by the Docker Compose
+
+```sh
+docker-compose down
+```
 
 ## Commands References
 
