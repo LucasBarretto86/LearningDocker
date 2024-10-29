@@ -1,6 +1,6 @@
 FROM node:18-alpine
 
-WORKDIR /dummy-api
+WORKDIR /app
 
 COPY package.json .
 
@@ -10,4 +10,4 @@ COPY . .
 
 EXPOSE 5500
 
-CMD ["node", "app.js"]
+CMD ["yarn", "run", "dev"]

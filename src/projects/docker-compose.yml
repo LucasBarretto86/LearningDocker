@@ -1,0 +1,9 @@
+services:
+  dummmy-api:
+    build: ./dummy-api
+    container_name: dummy-api_c
+    ports:
+      - "5500:5500"
+    volumes:
+      - ./dummy-api:/app
+      - /app/node_modules

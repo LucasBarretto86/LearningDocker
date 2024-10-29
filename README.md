@@ -213,7 +213,7 @@ After the file is created the next step is structure the [Dockerfile directives]
 
 FROM node:18-alpine
 
-WORKDIR dummy-api/
+WORKDIR app/
 
 COPY . .
 
