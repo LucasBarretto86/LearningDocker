@@ -23,6 +23,7 @@
   - [`Dockerfile`](#dockerfile)
     - [`Dockerfile` directives](#dockerfile-directives)
   - [Docker Compose](#docker-compose)
+    - [Docker compose Installation](#docker-compose-installation)
     - [`docker-compose.yml` directives](#docker-composeyml-directives)
   - [Commands References](#commands-references)
     - [Container commands](#container-commands)
@@ -612,6 +613,14 @@ Here's a table of common `Dockerfile` directives
 
 Docker Compose defines, configures, and runs multi-container applications with a YAML file (`docker-compose.yml`) , making it easy to manage and set up multi-service environments with one docker-compose up command. In development, it provides consistency across services, simplifies dependency management, and supports seamless code changes.
 
+### Docker compose Installation
+
+```sh
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+docker-compose --version
+```
+
 ### `docker-compose.yml` directives
 
 Docker Compose directives are configuration keys used in a docker-compose.yml file to define and manage multi-container applications, specifying aspects like services, networks, and volumes.
@@ -723,17 +732,19 @@ Use `docker image` to list all available images commands
 
 ### Docker Compose commands
 
+Use `docker-compose` to list all available images commands
+
 | Command                  | Description                                                        |
 | ------------------------ | ------------------------------------------------------------------ |
-| `docker-compose up`      | Starts the defined services and builds images if needed.           |
-| `docker-compose down`    | Stops and removes the containers, networks, and volumes.           |
-| `docker-compose build`   | Builds the images for the services defined in the Compose file.    |
-| `docker-compose start`   | Starts stopped services without recreating containers.             |
-| `docker-compose stop`    | Stops running services without removing them.                      |
-| `docker-compose restart` | Stops and then starts services.                                    |
-| `docker-compose logs`    | Displays the logs for the services.                                |
-| `docker-compose exec`    | Executes a command in a running container.                         |
-| `docker-compose run`     | Runs a one-off command in a new container.                         |
-| `docker-compose ps`      | Lists the containers for the services defined in the Compose file. |
-| `docker-compose config`  | Validates and displays the Compose file.                           |
-| `docker-compose rm`      | Removes stopped service containers.                                |
+| up      | Starts the defined services and builds images if needed.           |
+| down    | Stops and removes the containers, networks, and volumes.           |
+| build   | Builds the images for the services defined in the Compose file.    |
+| start   | Starts stopped services without recreating containers.             |
+| stop    | Stops running services without removing them.                      |
+| restart | Stops and then starts services.                                    |
+| logs    | Displays the logs for the services.                                |
+| exec    | Executes a command in a running container.                         |
+| run     | Runs a one-off command in a new container.                         |
+| ps      | Lists the containers for the services defined in the Compose file. |
+| config  | Validates and displays the Compose file.                           |
+| rm      | Removes stopped service containers.                                |
