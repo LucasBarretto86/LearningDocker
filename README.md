@@ -26,8 +26,10 @@
   - [Docker Compose](#docker-compose)
     - [Docker compose Installation](#docker-compose-installation)
     - [`docker-compose.yml` directives](#docker-composeyml-directives)
-    - [Creating docker-compose images and containers](#creating-docker-compose-images-and-containers)
+    - [Building docker-compose image and containers](#building-docker-compose-image-and-containers)
+    - [Running docker-compose images and containers](#running-docker-compose-images-and-containers)
     - [Stopping docker-compose containers](#stopping-docker-compose-containers)
+    - [Executing commands within a container](#executing-commands-within-a-container)
   - [Commands References](#commands-references)
     - [System commands](#system-commands)
     - [Container commands](#container-commands)
@@ -689,13 +691,28 @@ networks:
 
 This example defines a web service using Nginx and a database service using Postgres, with appropriate configurations for ports, volumes, and networks.
 
-### Creating docker-compose images and containers
+### Building docker-compose image and containers
+
+```sh
+docker-compose -f docker-compose.dev.yml build --no-cache
+```
+
+`-f` is a flag to specify the document you want it uses as playbook
+`--no-cache`  forces to the image be build ignoring any existing cache
+
+### Running docker-compose images and containers
 
 To create the images and run the containers (services) from the Docker Compose, we use:
 
 ```sh
 docker-compose up
+
+OR
+
+docker-compose -f docker-compose.dev.yml up
 ```
+
+`-f` is a flag to specify the document you want it uses as playbook
 
 ### Stopping docker-compose containers
 
@@ -703,6 +720,14 @@ To stop the services we use `down` it also removes the containers created by the
 
 ```sh
 docker-compose down
+```
+
+### Executing commands within a container
+
+After a container gets up and running we can still access them and execute commands within
+
+```sh
+docker exec -it my-api_c bin/rails c
 ```
 
 ## Commands References
