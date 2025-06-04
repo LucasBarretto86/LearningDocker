@@ -1,0 +1,38 @@
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:16-alpine
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+    restart: unless-stopped
+
+  redis:
+    container_name: redis
+    image: redis:7-alpine
+    ports:
+      - 6379:6379
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  glances:
+    container_name: glances
+    image: nicolargo/glances:latest
+    pid: "host"
+    network_mode: "host"
+    environment:
+      - GLANCES_OPT=-w
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # - ~/.docker/global/config/glances:/glances/conf
+    ports:
+      - 61208:61208
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:

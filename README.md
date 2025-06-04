@@ -35,6 +35,9 @@
     - [Container commands](#container-commands)
     - [Image commands](#image-commands)
     - [Docker Compose commands](#docker-compose-commands)
+  - [Docker removal](#docker-removal)
+    - [Stop and Prune docker](#stop-and-prune-docker)
+    - [Uninstall docker](#uninstall-docker)
 
 ## Getting Started
 
@@ -813,3 +816,30 @@ Use `docker-compose` to list all available images commands
 | ps      | Lists the containers for the services defined in the Compose file. |
 | config  | Validates and displays the Compose file.                           |
 | rm      | Removes stopped service containers.                                |
+
+## Docker removal
+
+### Stop and Prune docker
+
+Be aware all images networks and etc, will be destroyed!
+
+```sh
+docker ps -q | xargs docker stop
+docker system prune -a --volumes -f
+sudo systemctl stop docker.service
+sudo systemctl stop containerd.service
+sudo systemctl stop docker.socket
+```
+
+### Uninstall docker
+
+```sh
+sudo apt purge -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo apt remove -y docker docker-engine docker.io containerd runc docker-compose
+sudo apt autoremove -y
+sudo rm -rf /var/lib/docker
+sudo rm -rf /var/lib/containerd
+sudo rm -rf /etc/docker
+sudo rm -rf ~/.docker
+sudo groupdel docker
+```
